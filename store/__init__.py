@@ -155,7 +155,7 @@ def create_app(test_config=None):
 
         for item in items:
             if item["quantity"] > item["product"].stock_quantity:
-                flash(f"Only {item["product"].stock_quantity} unit(s) of {item["product"].name} are currently available.", "error")
+                flash(f"Only {item['product'].stock_quantity} unit(s) of {item['product'].name} are currently available.", "error")
                 return redirect(url_for("cart"))
 
         branch = None
