@@ -1,11 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Catalog | Kora Market{% endblock %}
+{% block title %}Shop | Kora Market{% endblock %}
 {% block content %}
   <section class="catalog-header">
-    <p class="eyebrow">Browse</p>
+    <p class="eyebrow">Kora Market</p>
     <h1>Shop the collection</h1>
+    <form class="search-bar" method="get" action="{{ url_for('catalog') }}">
+      <label class="sr-only" for="q">Search products</label>
+      <input id="q" name="q" type="search" value="{{ search }}" placeholder="Search products..." autocomplete="off">
+      <button class="button" type="submit">Search</button>
+      {% if search %}<a class="button button-secondary" href="{{ url_for('catalog') }}">Clear</a>{% endif %}
+    </form>
   </section>
-
   <section class="product-grid">
     {% for product in products %}
       <article class="product-card">
@@ -18,19 +23,17 @@
           <h2>{{ product.name }}</h2>
           <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
           <p>{{ product.description or 'Freshly stocked and ready for your next pick-up.' }}</p>
-          <div class="product-meta">
-            <span>{{ product.stock_quantity }} in stock</span>
-            <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
-              <button class="text-button" type="submit">Add to cart</button>
-            </form>
-          </div>
-          <div class="product-meta">
-            <a href="{{ url_for('product_detail', product_id=product.id) }}">View details</a>
-          </div>
+          <div class="product-meta"><span>{{ product.stock_quantity }} in stock</span><a href="{{ url_for('product_detail', product_id=product.id) }}">View details</a></div>
+          <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="button button-full" type="submit" {% if product.stock_quantity < 1 %}disabled{% endif %}>
+              {{ 'Out of stock' if product.stock_quantity < 1 else 'Add to cart' }}
+            </button>
+          </form>
         </div>
       </article>
     {% else %}
-      <p class="empty-state">No products are available right now.</p>
+      <p class="empty-state">{% if search %}No products matched “{{ search }}”.{% else %}No products are available right now.{% endif %}</p>
     {% endfor %}
   </section>
 {% endblock %}
