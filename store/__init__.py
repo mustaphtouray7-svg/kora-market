@@ -213,7 +213,9 @@ def create_app(test_config=None):
         order = models.Order.query.get_or_404(order_id)
         if request.method == "POST":
             provider = (request.form.get("provider") or "").strip().lower()
+            payer_phone_number = (request.form.get("payer_phone_number") or "").strip()
             allowed_providers = {
+                "molare": "Molare",
                 "wave": "Wave",
                 "aps": "APS",
                 "zona": "Zona",
@@ -222,9 +224,14 @@ def create_app(test_config=None):
                 flash("Please select a payment method.", "error")
                 return redirect(url_for("payment_method", order_id=order.id))
 
+            if not payer_phone_number:
+                flash("Please enter the phone number you will use for the payment.", "error")
+                return redirect(url_for("payment_method", order_id=order.id))
+
             payment = models.Payment(
                 order=order,
                 provider=allowed_providers[provider],
+                payer_phone_number=payer_phone_number,
                 status="pending",
                 amount=order.total,
             )
