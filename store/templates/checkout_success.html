@@ -1,13 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Order received | Kora Market{% endblock %}
+{% block title %}Payment method | Kora Market{% endblock %}
 {% block content %}
-  <section class="welcome">
-    <p class="eyebrow">Thank you</p>
-    <h1>Order received</h1>
-    <p class="welcome-copy">Your order {{ order.order_number }} has been placed and is awaiting payment confirmation. We’ll contact you to complete the next step.</p>
-    <div class="toolbar">
-      <a class="button" href="{{ url_for('catalog') }}">Continue shopping</a>
-      <a class="button button-secondary" href="{{ url_for('index') }}">Back home</a>
+  <section class="panel narrow">
+    <div class="panel-header stack">
+      <div>
+        <p class="eyebrow">Order received</p>
+        <h1>Choose payment method</h1>
+        <p class="welcome-copy">Your order {{ order.order_number }} is ready. Select how you want to pay.</p>
+      </div>
     </div>
+
+    <div class="checkout-summary">
+      <div class="checkout-total">
+        <span>Amount to pay</span>
+        <strong>{{ "%.2f" | format(order.total) }} GMD</strong>
+      </div>
+    </div>
+
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="field">
+        <label for="provider">Payment method</label>
+        <select id="provider" name="provider" required>
+          <option value="">Select a payment method</option>
+          <option value="wave">Wave</option>
+          <option value="qmoney">QMoney</option>
+          <option value="afrimoney">AfriMoney</option>
+          <option value="aps">APS</option>
+          <option value="bank_transfer">Bank transfer</option>
+        </select>
+      </div>
+
+      <button class="button" type="submit">Continue to payment</button>
+    </form>
   </section>
 {% endblock %}
