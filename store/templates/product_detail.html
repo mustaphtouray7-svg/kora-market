@@ -18,7 +18,7 @@
         <span>{{ product.stock_quantity }} available</span>
         <span>In stock</span>
       </div>
-      <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="inline-form">
+      <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="button" type="submit">Add to cart</button>
       </form>
       <div class="toolbar">
