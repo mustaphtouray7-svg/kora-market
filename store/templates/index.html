@@ -5,7 +5,7 @@
     <p class="eyebrow">A new way to shop local</p>
     <h1>Your next favorite find is just around the corner.</h1>
     <p class="welcome-copy">Discover available offerings from our local business, with staff tools kept separate and secure.</p>
-    <div class="toolbar">
+    <form class="search-bar" method="get" action="{{ url_for('catalog') }}"><label class="sr-only" for="home-q">Search products</label><input id="home-q" name="q" type="search" placeholder="Search products..." autocomplete="off"><button class="button" type="submit">Search</button></form><div class="toolbar">
       <a class="button" href="{{ url_for('catalog') }}">Browse products</a>
       <a class="button button-secondary" href="{{ url_for('auth.login') }}">Staff sign in</a>
     </div>
