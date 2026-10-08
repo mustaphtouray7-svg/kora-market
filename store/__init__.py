@@ -236,19 +236,20 @@ def create_app(test_config=None):
             db.session.add(models.OrderItem(order=order,product=product,product_name=product.name,quantity=quantity,unit_price=product.price,subtotal=subtotal))
         order.total = total
         payment = models.Payment(order=order,provider=allowed[provider],payer_phone_number=payer_phone,status="pending",amount=order.total)
-        db.session.add(payment); db.session.commit(); session["cart"]={}
+        db.session.add(payment); db.session.commit()
         try:
             response = _wave_checkout(order,payer_phone) if provider=="wave" else _aps_checkout(order,payer_phone,provider)
-            launch_url = response.get("wave_launch_url") if provider=="wave" else response.get("url")
+            launch_url = response.get("wave_launch_url") if provider=="wave" else (response.get("how") or response.get("url"))
             payment.provider_reference = response.get("id") or response.get("transaction_id")
             db.session.commit()
         except Exception as exc:
             app.logger.exception("Payment initiation failed for %s: %s",order.order_number,exc)
-            flash(f"{allowed[provider]} payment could not be started. Check the merchant payment configuration.","error")
+            flash(f"{allowed[provider]} payment could not be started. The payment account is not connected yet.","error")
             return redirect(url_for("checkout"))
         if not launch_url:
             flash(f"{allowed[provider]} did not return a payment link.","error")
             return redirect(url_for("checkout"))
+        session["cart"]={}
         return redirect(launch_url)
 
 
