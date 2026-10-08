@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Order received | Kora Market{% endblock %}
+{% block content %}
+  <section class="welcome">
+    <p class="eyebrow">Thank you</p>
+    <h1>Order received</h1>
+    <p class="welcome-copy">Your order {{ order.order_number }} has been placed and is awaiting payment confirmation. We’ll contact you to complete the next step.</p>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('catalog') }}">Continue shopping</a>
+      <a class="button button-secondary" href="{{ url_for('index') }}">Back home</a>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Staff sign in | Kora Market{% endblock %}
+{% block content %}
+  <section class="auth-card">
+    <p class="eyebrow">Staff access</p>
+    <h1>Sign in to your dashboard</h1>
+    <p class="muted">Use your authorized administrator account.</p>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="field">
+        {{ form.username.label }}
+        {{ form.username(autocomplete="username", autocapitalize="none") }}
+        {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.password.label }}
+        {{ form.password(autocomplete="current-password") }}
+        {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      {{ form.submit(class_="button button-full") }}
+    </form>
+  </section>
+{% endblock %}

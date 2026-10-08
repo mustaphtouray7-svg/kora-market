@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit branch' if branch else 'Add branch' }} | Kora Market{% endblock %}
+{% block content %}
+  <section class="panel narrow">
+    <div class="panel-header stack">
+      <div>
+        <p class="eyebrow">Operations</p>
+        <h1>{{ 'Edit branch' if branch else 'Add branch' }}</h1>
+      </div>
+      <a class="link-back" href="{{ url_for('auth.branches') }}">Back to branches</a>
+    </div>
+
+    <form method="post" class="stack-form">
+      {{ form.hidden_tag() }}
+      <div class="field">
+        {{ form.name.label }}
+        {{ form.name() }}
+        {% for error in form.name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.address.label }}
+        {{ form.address() }}
+        {% for error in form.address.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <label class="checkbox-row">
+        {{ form.is_active() }}
+        <span>{{ form.is_active.label.text }}</span>
+      </label>
+      {{ form.submit(class_='button') }}
+    </form>
+  </section>
+{% endblock %}

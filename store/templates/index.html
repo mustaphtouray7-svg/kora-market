@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Kora Market | Shop local{% endblock %}
+{% block content %}
+  <section class="welcome hero">
+    <p class="eyebrow">A new way to shop local</p>
+    <h1>Your next favorite find is just around the corner.</h1>
+    <p class="welcome-copy">Discover available offerings from our local business, with staff tools kept separate and secure.</p>
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('catalog') }}">Browse products</a>
+      <a class="button button-secondary" href="{{ url_for('auth.login') }}">Staff sign in</a>
+    </div>
+  </section>
+
+  {% if products %}
+    <section class="catalog-preview">
+      <div class="catalog-header compact">
+        <p class="eyebrow">Featured</p>
+        <h2>Popular picks</h2>
+      </div>
+      <div class="product-grid preview-grid">
+        {% for product in products[:4] %}
+          <article class="product-card">
+            {% if product.image_url %}
+              <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+              <div class="product-placeholder">{{ product.name[:1] }}</div>
+            {% endif %}
+            <div class="product-copy">
+              <h2>{{ product.name }}</h2>
+              <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
+              <a href="{{ url_for('product_detail', product_id=product.id) }}">View details</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

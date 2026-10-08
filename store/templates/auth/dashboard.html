@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Kora Market{% endblock %}
+{% block content %}
+  <section class="welcome">
+    <p class="eyebrow">Administrator</p>
+    <h1>Welcome back, {{ current_user.username }}.</h1>
+    <p class="welcome-copy">Your secure business dashboard is active. Use the sections below to manage inventory and branch locations.</p>
+
+    <div class="dashboard-grid">
+      <div class="info-tile">
+        <span class="eyebrow">Products</span>
+        <strong>{{ product_count }}</strong>
+        <a href="{{ url_for('auth.products') }}">Manage products</a>
+      </div>
+      <div class="info-tile">
+        <span class="eyebrow">Branches</span>
+        <strong>{{ branch_count }}</strong>
+        <a href="{{ url_for('auth.branches') }}">Manage branches</a>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <a class="button" href="{{ url_for('auth.products') }}">Products</a>
+      <a class="button button-secondary" href="{{ url_for('auth.branches') }}">Branches</a>
+    </div>
+
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button button-secondary" type="submit">Sign out</button>
+    </form>
+  </section>
+{% endblock %}

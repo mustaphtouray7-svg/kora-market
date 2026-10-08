@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit product' if product else 'Add product' }} | Kora Market{% endblock %}
+{% block content %}
+  <section class="panel narrow">
+    <div class="panel-header stack">
+      <div>
+        <p class="eyebrow">Inventory</p>
+        <h1>{{ 'Edit product' if product else 'Add product' }}</h1>
+      </div>
+      <a class="link-back" href="{{ url_for('auth.products') }}">Back to products</a>
+    </div>
+
+    <form method="post" class="stack-form">
+      {{ form.hidden_tag() }}
+      <div class="field">
+        {{ form.name.label }}
+        {{ form.name() }}
+        {% for error in form.name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="field">
+        {{ form.description.label }}
+        {{ form.description(rows=5) }}
+        {% for error in form.description.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          {{ form.price.label }}
+          {{ form.price() }}
+          {% for error in form.price.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="field">
+          {{ form.stock_quantity.label }}
+          {{ form.stock_quantity() }}
+          {% for error in form.stock_quantity.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+      </div>
+      <div class="field">
+        {{ form.image_url.label }}
+        {{ form.image_url() }}
+        {% for error in form.image_url.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+      <label class="checkbox-row">
+        {{ form.is_active() }}
+        <span>{{ form.is_active.label.text }}</span>
+      </label>
+      {{ form.submit(class_='button') }}
+    </form>
+  </section>
+{% endblock %}

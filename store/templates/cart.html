@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Cart | Kora Market{% endblock %}
+{% block content %}
+  <section class="panel narrow">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">Basket</p>
+        <h1>Your cart</h1>
+      </div>
+      <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
+    </div>
+
+    {% if items %}
+      {% for item in items %}
+        <div class="cart-item">
+          <div>
+            <h2>{{ item.product.name }}</h2>
+            <p>{{ item.product.description or 'Freshly stocked and ready for pickup.' }}</p>
+          </div>
+          <div class="cart-actions">
+            <form method="post" action="{{ url_for('update_cart', product_id=item.product.id) }}">
+              <label>
+                Qty
+                <input type="number" name="quantity" min="0" value="{{ item.quantity }}">
+              </label>
+              <button type="submit">Update</button>
+            </form>
+            <form method="post" action="{{ url_for('remove_from_cart', product_id=item.product.id) }}">
+              <button type="submit" class="danger-button">Remove</button>
+            </form>
+          </div>
+          <div class="cart-price">{{ "%.2f" | format(item.line_total) }} GMD</div>
+        </div>
+      {% endfor %}
+
+      <div class="cart-summary">
+        <span>Total</span>
+        <strong>{{ "%.2f" | format(total) }} GMD</strong>
+      </div>
+      <div class="toolbar">
+        <a class="button" href="{{ url_for('checkout') }}">Proceed to checkout</a>
+      </div>
+    {% else %}
+      <p class="empty-state">Your cart is empty.</p>
+    {% endif %}
+  </section>
+{% endblock %}

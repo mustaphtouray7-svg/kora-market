@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Checkout | Kora Market{% endblock %}
+{% block content %}
+  <section class="panel narrow">
+    <div class="panel-header stack">
+      <div>
+        <p class="eyebrow">Checkout</p>
+        <h1>Confirm details</h1>
+      </div>
+      <a class="link-back" href="{{ url_for('cart') }}">Back to cart</a>
+    </div>
+
+    <form method="post" class="stack-form">
+      <div class="field">
+        <label for="full_name">Full name</label>
+        <input id="full_name" name="full_name" type="text" required>
+      </div>
+      <div class="field">
+        <label for="phone_number">Phone number</label>
+        <input id="phone_number" name="phone_number" type="tel" required>
+      </div>
+      <div class="field">
+        <label for="branch_id">Branch (optional)</label>
+        <select id="branch_id" name="branch_id">
+          <option value="">Select a preferred branch</option>
+          {% for branch in branches %}
+            <option value="{{ branch.id }}">{{ branch.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="checkout-summary">
+        <h2>Order preview</h2>
+        {% for item in items %}
+          <div class="checkout-line">
+            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+            <strong>{{ "%.2f" | format(item.line_total) }} GMD</strong>
+          </div>
+        {% endfor %}
+        <div class="checkout-total">
+          <span>Total</span>
+          <strong>{{ "%.2f" | format(total) }} GMD</strong>
+        </div>
+      </div>
+
+      <button class="button" type="submit">Place order</button>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} | Kora Market{% endblock %}
+{% block content %}
+  <section class="product-detail">
+    <div class="product-visual">
+      {% if product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+      {% else %}
+        <div class="product-placeholder large">{{ product.name[:1] }}</div>
+      {% endif %}
+    </div>
+    <div class="product-detail-copy">
+      <p class="eyebrow">Featured item</p>
+      <h1>{{ product.name }}</h1>
+      <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
+      <p>{{ product.description or 'Freshly stocked and ready for your next pick-up.' }}</p>
+      <div class="detail-meta">
+        <span>{{ product.stock_quantity }} available</span>
+        <span>In stock</span>
+      </div>
+      <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="inline-form">
+        <button class="button" type="submit">Add to cart</button>
+      </form>
+      <div class="toolbar">
+        <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
+        <a class="button button-secondary" href="{{ url_for('cart') }}">View cart</a>
+      </div>
+    </div>
+  </section>
+{% endblock %}

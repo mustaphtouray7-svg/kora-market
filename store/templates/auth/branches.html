@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Branches | Kora Market{% endblock %}
+{% block content %}
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <p class="eyebrow">Operations</p>
+        <h1>Branches</h1>
+      </div>
+      <a class="button" href="{{ url_for('auth.new_branch') }}">Add branch</a>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for branch in branches %}
+            <tr>
+              <td>{{ branch.name }}</td>
+              <td>{{ branch.address or '—' }}</td>
+              <td>{{ 'Active' if branch.is_active else 'Inactive' }}</td>
+              <td class="action-stack">
+                <a href="{{ url_for('auth.edit_branch', branch_id=branch.id) }}">Edit</a>
+                <form method="post" action="{{ url_for('auth.toggle_branch', branch_id=branch.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit">{{ 'Deactivate' if branch.is_active else 'Activate' }}</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4">No branches have been added yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
