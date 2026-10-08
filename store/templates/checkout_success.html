@@ -5,19 +5,19 @@
     <div class="panel-header stack">
       <div>
         <p class="eyebrow">Order received</p>
-        <h1>Choose payment method</h1>
-        <p class="welcome-copy">Your order {{ order.order_number }} is ready. Select how you want to pay.</p>
+        <h1>Thank you</h1>
+        <p class="welcome-copy">Your order {{ order.order_number }} has been received. Choose a payment method to continue.</p>
       </div>
     </div>
 
     <div class="checkout-summary">
       <div class="checkout-total">
-        <span>Amount to pay</span>
+        <span>Total to pay</span>
         <strong>{{ "%.2f" | format(order.total) }} GMD</strong>
       </div>
     </div>
 
-    <form method="post" class="stack-form">
+    <form method="post" action="{{ url_for('payment_method', order_id=order.id) }}" class="stack-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="field">
@@ -25,11 +25,14 @@
         <select id="provider" name="provider" required>
           <option value="">Select a payment method</option>
           <option value="wave">Wave</option>
-          <option value="qmoney">QMoney</option>
-          <option value="afrimoney">AfriMoney</option>
           <option value="aps">APS</option>
-          <option value="bank_transfer">Bank transfer</option>
+          <option value="zona">Zona</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label for="payment_number">Payment number</label>
+        <input id="payment_number" type="text" value="835889066" readonly>
       </div>
 
       <button class="button" type="submit">Continue to payment</button>
