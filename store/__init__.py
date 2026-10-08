@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 from flask import Flask, flash, redirect, render_template, request, session, url_for
+from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
 
 from store.config import Config
@@ -51,7 +52,7 @@ def create_app(test_config=None):
         if search:
             pattern = f"%{search}%"
             query = query.filter(
-                db.or_(
+                or_(
                     models.Product.name.ilike(pattern),
                     models.Product.description.ilike(pattern),
                 )
