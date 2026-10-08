@@ -116,6 +116,7 @@ class Payment(db.Model):
     )
     provider = db.Column(db.String(24), nullable=False)
     provider_reference = db.Column(db.String(160), unique=True)
+    payer_phone_number = db.Column(db.String(32), nullable=False)
     status = db.Column(db.String(32), nullable=False, default="pending", index=True)
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
