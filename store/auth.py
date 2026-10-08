@@ -8,7 +8,7 @@ from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, Str
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
 from store.extensions import db
-from store.models import AdminUser, Branch, Product
+from store.models import AdminUser, Branch, Customer, Order, Product
 
 auth = Blueprint("auth", __name__)
 
@@ -64,11 +64,35 @@ def login():
 def dashboard():
     product_count = Product.query.count()
     branch_count = Branch.query.count()
+    order_count = Order.query.count()
+    customer_count = Customer.query.count()
+    pending_order_count = Order.query.filter_by(payment_status="pending").count()
     return render_template(
         "auth/dashboard.html",
         product_count=product_count,
         branch_count=branch_count,
+        order_count=order_count,
+        customer_count=customer_count,
+        pending_order_count=pending_order_count,
     )
+
+@auth.get("/admin/orders")
+@login_required
+def orders():
+    order_list = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template("auth/orders.html", orders=order_list)
+
+@auth.get("/admin/orders/<int:order_id>")
+@login_required
+def order_detail(order_id):
+    order = Order.query.get_or_404(order_id)
+    return render_template("auth/order_detail.html", order=order)
+
+@auth.get("/admin/customers")
+@login_required
+def customers():
+    customer_list = Customer.query.order_by(Customer.created_at.desc()).all()
+    return render_template("auth/customers.html", customers=customer_list)
 
 
 @auth.get("/admin/products")
