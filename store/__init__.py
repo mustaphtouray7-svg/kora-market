@@ -46,13 +46,18 @@ def create_app(test_config=None):
 
     @app.get("/products")
     def catalog():
-        products = (
-            db.session.query(models.Product)
-            .filter_by(is_active=True)
-            .order_by(models.Product.created_at.desc())
-            .all()
-        )
-        return render_template("catalog.html", products=products)
+        search = (request.args.get("q") or "").strip()
+        query = db.session.query(models.Product).filter_by(is_active=True)
+        if search:
+            pattern = f"%{search}%"
+            query = query.filter(
+                db.or_(
+                    models.Product.name.ilike(pattern),
+                    models.Product.description.ilike(pattern),
+                )
+            )
+        products = query.order_by(models.Product.created_at.desc()).all()
+        return render_template("catalog.html", products=products, search=search)
 
     @app.get("/products/<int:product_id>")
     def product_detail(product_id):
@@ -92,7 +97,11 @@ def create_app(test_config=None):
     def add_to_cart(product_id):
         product = models.Product.query.filter_by(id=product_id, is_active=True).first_or_404()
         cart = get_cart()
-        cart[product_id] = cart.get(product_id, 0) + 1
+        current_quantity = cart.get(product_id, 0)
+        if current_quantity >= product.stock_quantity:
+            flash("That product does not have enough stock available.", "error")
+            return redirect(request.referrer or url_for("catalog"))
+        cart[product_id] = current_quantity + 1
         session["cart"] = {str(product_id): quantity for product_id, quantity in cart.items()}
         flash(f"{product.name} added to your cart.", "success")
         return redirect(url_for("catalog"))
@@ -100,6 +109,10 @@ def create_app(test_config=None):
     @app.post("/cart/update/<int:product_id>")
     def update_cart(product_id):
         quantity = max(0, int(request.form.get("quantity", 0) or 0))
+        product = models.Product.query.filter_by(id=product_id, is_active=True).first_or_404()
+        if quantity > product.stock_quantity:
+            flash(f"Only {product.stock_quantity} unit(s) of {product.name} are currently available.", "error")
+            quantity = product.stock_quantity
         cart = get_cart()
         if quantity <= 0:
             cart.pop(product_id, None)
@@ -139,6 +152,11 @@ def create_app(test_config=None):
         if not full_name or not phone_number:
             flash("Please provide your full name and phone number.", "error")
             return redirect(url_for("checkout"))
+
+        for item in items:
+            if item["quantity"] > item["product"].stock_quantity:
+                flash(f"Only {item["product"].stock_quantity} unit(s) of {item["product"].name} are currently available.", "error")
+                return redirect(url_for("cart"))
 
         branch = None
         if branch_id:
