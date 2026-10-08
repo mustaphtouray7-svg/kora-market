@@ -10,7 +10,7 @@
       <a class="link-back" href="{{ url_for('cart') }}">Back to cart</a>
     </div>
 
-    <form method="post" class="stack-form">
+    <form method="post" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="field">
         <label for="full_name">Full name</label>
         <input id="full_name" name="full_name" type="text" required>
