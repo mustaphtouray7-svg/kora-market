@@ -7,6 +7,7 @@ import click
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import or_
 from werkzeug.exceptions import NotFound
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from store.config import Config
 from store.extensions import csrf, db, login_manager, migrate
@@ -14,6 +15,7 @@ from store.extensions import csrf, db, login_manager, migrate
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     app.config.from_object(Config)
     if test_config is not None:
         app.config.update(test_config)
@@ -29,6 +31,11 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
+
+    @app.before_request
+    def enforce_https_in_production():
+        if app.config.get("APP_ENV") == "production" and not request.is_secure:
+            return redirect(request.url.replace("http://", "https://", 1), code=308)
 
     from store import models  # noqa: F401
     from store.auth import auth
