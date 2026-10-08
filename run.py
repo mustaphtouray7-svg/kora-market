@@ -11,7 +11,24 @@ app = create_app()
 with app.app_context():
     upgrade()
 
-    from store.models import Product
+    from store.models import Branch, Product
+
+    starter_branches = [
+        "Latri Kunda",
+        "Serekunda",
+        "Banjul",
+        "Brikama",
+    ]
+
+    existing_branches = {branch.name for branch in Branch.query.all()}
+    new_branches = [
+        Branch(name=name, is_active=True)
+        for name in starter_branches
+        if name not in existing_branches
+    ]
+    if new_branches:
+        db.session.add_all(new_branches)
+        db.session.commit()
 
     starter_products = [
         ("Rice 5kg", "Quality rice for everyday cooking.", Decimal("200.00"), "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80"),
