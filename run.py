@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from store import create_app
+from store.extensions import db
 from flask_migrate import upgrade
 
 app = create_app()
@@ -28,14 +29,14 @@ with app.app_context():
         ]
 
         for name, description, price in starter_products:
-            db_product = Product(
-                name=name,
-                description=description,
-                price=price,
-                stock_quantity=10,
-                is_active=True,
+            db.session.add(
+                Product(
+                    name=name,
+                    description=description,
+                    price=price,
+                    stock_quantity=10,
+                    is_active=True,
+                )
             )
-            from store.extensions import db
-            db.session.add(db_product)
 
         db.session.commit()
