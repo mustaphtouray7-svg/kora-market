@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Payment | Kora Market{% endblock %}
+{% block content %}
+<section class="panel narrow">
+  <div class="panel-header stack"><div><p class="eyebrow">Payment</p><h1>Payment request ready</h1><p class="welcome-copy">We recorded your selected payment method and payment number for order {{ order.order_number }}.</p></div></div>
+  <div class="checkout-summary">
+    <div class="checkout-line"><span>Method</span><strong>{{ provider_name }}</strong></div>
+    <div class="checkout-line"><span>Payment number</span><strong>{{ payment.payer_phone_number }}</strong></div>
+    <div class="checkout-total"><span>Amount</span><strong>{{ "%.2f" | format(order.total) }} GMD</strong></div>
+  </div>
+  <div class="flash flash-info">Payment is pending. The live authorization step will be enabled when the selected provider's merchant API credentials are connected to Kora Market.</div>
+  <a class="button button-secondary" href="{{ url_for('catalog') }}">Return to shop</a>
+</section>
+{% endblock %}
