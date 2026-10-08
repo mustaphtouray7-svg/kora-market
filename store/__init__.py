@@ -198,7 +198,40 @@ def create_app(test_config=None):
         order.total = total
         db.session.commit()
         session["cart"] = {}
-        flash("Your order has been placed. Payment is still pending.", "success")
+        return redirect(url_for("payment_method", order_id=order.id))
+
+
+    @app.route("/payment/<int:order_id>", methods=["GET", "POST"])
+    def payment_method(order_id):
+        order = models.Order.query.get_or_404(order_id)
+        if request.method == "POST":
+            provider = (request.form.get("provider") or "").strip().lower()
+            allowed_providers = {
+                "wave": "Wave",
+                "qmoney": "QMoney",
+                "afrimoney": "AfriMoney",
+                "aps": "APS",
+                "bank_transfer": "Bank transfer",
+            }
+            if provider not in allowed_providers:
+                flash("Please select a payment method.", "error")
+                return redirect(url_for("payment_method", order_id=order.id))
+
+            payment = models.Payment(
+                order=order,
+                provider=allowed_providers[provider],
+                status="pending",
+                amount=order.total,
+            )
+            db.session.add(payment)
+            db.session.commit()
+            return render_template(
+                "payment_pending.html",
+                order=order,
+                payment=payment,
+                provider_name=allowed_providers[provider],
+            )
+
         return render_template("checkout_success.html", order=order)
 
     @app.get("/health")
