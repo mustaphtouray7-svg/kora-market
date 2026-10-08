@@ -1,4 +1,10 @@
+import hashlib
+import hmac
+import json
 import secrets
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -112,7 +118,7 @@ def create_app(test_config=None):
         cart[product_id] = current_quantity + 1
         session["cart"] = {str(product_id): quantity for product_id, quantity in cart.items()}
         flash(f"{product.name} added to your cart.", "success")
-        return redirect(url_for("catalog"))
+        return redirect(url_for("checkout"))
 
     @app.post("/cart/update/<int:product_id>")
     def update_cart(product_id):
@@ -146,105 +152,161 @@ def create_app(test_config=None):
         total = sum((item["line_total"] for item in items), Decimal("0.00"))
         return render_template("checkout.html", items=items, total=total, branches=branches)
 
+
+    def _json_request(url, payload, headers, method="POST"):
+        body = json.dumps(payload).encode("utf-8") if payload is not None else None
+        req = urllib.request.Request(url, data=body, headers={"Content-Type":"application/json","Accept":"application/json",**headers}, method=method)
+        with urllib.request.urlopen(req, timeout=12) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+
+    def _wave_checkout(order, payer_phone):
+        api_key = app.config.get("WAVE_API_KEY")
+        if not api_key:
+            raise RuntimeError("Wave payment is not configured.")
+        mobile = payer_phone if payer_phone.startswith("+") else "+220" + payer_phone.lstrip("0")
+        payload = {
+            "amount": str(order.total.quantize(Decimal("0.01"))),
+            "currency": app.config.get("WAVE_CURRENCY", "GMD"),
+            "client_reference": order.order_number,
+            "restrict_payer_mobile": mobile,
+            "success_url": url_for("wave_payment_success", order_id=order.id, _external=True),
+            "error_url": url_for("wave_payment_error", order_id=order.id, _external=True),
+        }
+        return _json_request("https://api.wave.com/v1/checkout/sessions", payload, {"Authorization":f"Bearer {api_key}"})
+
+
+    def _aps_methods():
+        token, secret, merchant = app.config.get("APS_APP_TOKEN"), app.config.get("APS_APP_SECRET"), app.config.get("APS_MERCHANT_GUID")
+        if not token or not secret or not merchant:
+            raise RuntimeError("APS payment is not configured.")
+        base = app.config.get("APS_API_BASE","https://fpf-api.proc-gw.com").rstrip("/")
+        req = urllib.request.Request(f"{base}/api/v3/{merchant}/info", headers={"X-App-Token":token,"X-App-Secret":secret,"Accept":"application/json"}, method="GET")
+        with urllib.request.urlopen(req, timeout=12) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+
+    def _aps_checkout(order, payer_phone, provider):
+        methods = _aps_methods().get("methods", [])
+        selected = next((m for m in methods if (provider=="yonna" and "yonna" in str(m.get("label","")).lower()) or (provider=="aps" and "aps" in str(m.get("label","")).lower())), None)
+        if not selected:
+            raise RuntimeError(f"{provider} is not available in the configured APS merchant account.")
+        base = app.config.get("APS_API_BASE","https://fpf-api.proc-gw.com").rstrip("/")
+        payload = {
+            "mode":"deposit",
+            "redirect_url":url_for("aps_payment_redirect",order_id=order.id,_external=True),
+            "status_callback_url":url_for("aps_payment_callback",order_id=order.id,_external=True),
+            "amount":float(order.total),
+            "merchant_external_id":order.order_number,
+            "merchant_payer_id":payer_phone,
+            "payment_methods":[selected["guid"]],
+        }
+        return _json_request(f"{base}/api/v3/{app.config['APS_MERCHANT_GUID']}/fpf-url",payload,{"X-App-Token":app.config["APS_APP_TOKEN"],"X-App-Secret":app.config["APS_APP_SECRET"]})
+
+
     @app.post("/checkout")
     def submit_checkout():
         items = get_cart_items()
         if not items:
             flash("Your cart is empty.", "info")
             return redirect(url_for("catalog"))
-
         full_name = (request.form.get("full_name") or "").strip()
         phone_number = (request.form.get("phone_number") or "").strip()
         branch_id = request.form.get("branch_id") or None
-
-        if not full_name or not phone_number:
-            flash("Please provide your full name and phone number.", "error")
+        provider = (request.form.get("provider") or "").strip().lower()
+        payer_phone = (request.form.get("payer_phone_number") or "").strip()
+        allowed = {"wave":"Wave","aps":"APS","yonna":"Yonna"}
+        if not full_name or not phone_number or not payer_phone or provider not in allowed:
+            flash("Please complete your details, select Wave, APS, or Yonna, and enter the payment phone number.", "error")
             return redirect(url_for("checkout"))
-
         for item in items:
             if item["quantity"] > item["product"].stock_quantity:
                 flash(f"Only {item['product'].stock_quantity} unit(s) of {item['product'].name} are currently available.", "error")
                 return redirect(url_for("cart"))
-
-        branch = None
-        if branch_id:
-            branch = models.Branch.query.filter_by(id=branch_id, is_active=True).first()
-
-        customer = models.Customer(full_name=full_name, phone_number=phone_number)
-        db.session.add(customer)
-        db.session.flush()
-
-        order_number = f"KORA-{datetime.utcnow().strftime('%Y%m%d')}-{(db.session.query(models.Order.id).count() + 1):04d}"
-        order = models.Order(
-            order_number=order_number,
-            customer=customer,
-            branch=branch,
-            status="pending",
-            payment_status="pending",
-            currency="GMD",
-            total=Decimal("0.00"),
-        )
-        db.session.add(order)
-        db.session.flush()
-
+        branch = models.Branch.query.filter_by(id=branch_id,is_active=True).first() if branch_id else None
+        customer = models.Customer(full_name=full_name,phone_number=phone_number)
+        db.session.add(customer); db.session.flush()
+        order_number = f"KORA-{datetime.utcnow().strftime('%Y%m%d')}-{(db.session.query(models.Order.id).count()+1):04d}"
+        order = models.Order(order_number=order_number,customer=customer,branch=branch,status="pending",payment_status="pending",currency="GMD",total=Decimal("0.00"))
+        db.session.add(order); db.session.flush()
         total = Decimal("0.00")
         for item in items:
-            product = item["product"]
-            quantity = item["quantity"]
-            subtotal = product.price * quantity
-            total += subtotal
-            order_item = models.OrderItem(
-                order=order,
-                product=product,
-                product_name=product.name,
-                quantity=quantity,
-                unit_price=product.price,
-                subtotal=subtotal,
-            )
-            db.session.add(order_item)
+            product, quantity = item["product"], item["quantity"]
+            subtotal = product.price * quantity; total += subtotal
+            db.session.add(models.OrderItem(order=order,product=product,product_name=product.name,quantity=quantity,unit_price=product.price,subtotal=subtotal))
         order.total = total
-        db.session.commit()
-        session["cart"] = {}
-        return redirect(url_for("payment_method", order_id=order.id))
-
-
-    @app.route("/payment/<int:order_id>", methods=["GET", "POST"])
-    def payment_method(order_id):
-        order = models.Order.query.get_or_404(order_id)
-        if request.method == "POST":
-            provider = (request.form.get("provider") or "").strip().lower()
-            payer_phone_number = (request.form.get("payer_phone_number") or "").strip()
-            allowed_providers = {
-                "molare": "Molare",
-                "wave": "Wave",
-                "aps": "APS",
-                "zona": "Zona",
-            }
-            if provider not in allowed_providers:
-                flash("Please select a payment method.", "error")
-                return redirect(url_for("payment_method", order_id=order.id))
-
-            if not payer_phone_number:
-                flash("Please enter the phone number you will use for the payment.", "error")
-                return redirect(url_for("payment_method", order_id=order.id))
-
-            payment = models.Payment(
-                order=order,
-                provider=allowed_providers[provider],
-                payer_phone_number=payer_phone_number,
-                status="pending",
-                amount=order.total,
-            )
-            db.session.add(payment)
+        payment = models.Payment(order=order,provider=allowed[provider],payer_phone_number=payer_phone,status="pending",amount=order.total)
+        db.session.add(payment); db.session.commit(); session["cart"]={}
+        try:
+            response = _wave_checkout(order,payer_phone) if provider=="wave" else _aps_checkout(order,payer_phone,provider)
+            launch_url = response.get("wave_launch_url") if provider=="wave" else response.get("url")
+            payment.provider_reference = response.get("id") or response.get("transaction_id")
             db.session.commit()
-            return render_template(
-                "payment_pending.html",
-                order=order,
-                payment=payment,
-                provider_name=allowed_providers[provider],
-            )
+        except Exception as exc:
+            app.logger.exception("Payment initiation failed for %s: %s",order.order_number,exc)
+            flash(f"{allowed[provider]} payment could not be started. Check the merchant payment configuration.","error")
+            return redirect(url_for("checkout"))
+        if not launch_url:
+            flash(f"{allowed[provider]} did not return a payment link.","error")
+            return redirect(url_for("checkout"))
+        return redirect(launch_url)
 
-        return render_template("checkout_success.html", order=order)
+
+    @app.get("/payment/wave/success/<int:order_id>")
+    def wave_payment_success(order_id):
+        order=models.Order.query.get_or_404(order_id); api_key=app.config.get("WAVE_API_KEY")
+        if not api_key:
+            return redirect(url_for("payment_pending",order_id=order.id))
+        try:
+            url="https://api.wave.com/v1/checkout/sessions/search?client_reference="+urllib.parse.quote(order.order_number)
+            data=_json_request(url,None,{"Authorization":f"Bearer {api_key}"},method="GET")
+            result=(data.get("result") or [None])[0]
+            if result and result.get("payment_status")=="succeeded":
+                order.payment_status="paid"; order.status="confirmed"
+                if order.payments:
+                    order.payments[-1].status="paid"; order.payments[-1].provider_reference=result.get("id")
+                db.session.commit()
+                return render_template("payment_pending.html",order=order,payment=order.payments[-1] if order.payments else None,provider_name="Wave",paid=True)
+        except Exception:
+            app.logger.exception("Wave payment verification failed")
+        flash("Wave payment has not been confirmed yet.","info")
+        return redirect(url_for("payment_pending",order_id=order.id))
+
+
+    @app.get("/payment/wave/error/<int:order_id>")
+    def wave_payment_error(order_id):
+        order=models.Order.query.get_or_404(order_id)
+        if order.payments: order.payments[-1].status="failed"
+        db.session.commit()
+        return redirect(url_for("payment_pending",order_id=order.id))
+
+
+    @app.get("/payment/aps/redirect/<int:order_id>")
+    def aps_payment_redirect(order_id):
+        return redirect(url_for("payment_pending",order_id=order_id))
+
+
+    @app.post("/payment/aps/callback/<int:order_id>")
+    def aps_payment_callback(order_id):
+        order=models.Order.query.get_or_404(order_id); raw=request.get_data(); secret=app.config.get("APS_CALLBACK_SECRET"); signature=request.headers.get("X-Signature")
+        if secret and signature:
+            expected=hmac.new(secret.encode("utf-8"),raw,hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(expected,signature): return {"error":"invalid signature"},401
+        payload=request.get_json(silent=True) or {}; status=payload.get("status")
+        if status=="done" or payload.get("sep31_status")=="completed":
+            order.payment_status="paid"; order.status="confirmed"
+            if order.payments: order.payments[-1].status="paid"; order.payments[-1].provider_reference=payload.get("transaction_id") or order.payments[-1].provider_reference
+        elif status in {"canceled","expired","refunded"} or payload.get("sep31_status")=="error":
+            if order.payments: order.payments[-1].status="failed"
+        db.session.commit(); return {"status":"ok"}
+
+
+    @app.get("/payment/pending/<int:order_id>")
+    def payment_pending(order_id):
+        order=models.Order.query.get_or_404(order_id); payment=order.payments[-1] if order.payments else None
+        if not payment: return redirect(url_for("checkout"))
+        return render_template("payment_pending.html",order=order,payment=payment,provider_name=payment.provider,paid=order.payment_status=="paid")
+
 
     @app.get("/health")
     def health():
