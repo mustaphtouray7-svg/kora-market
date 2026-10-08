@@ -208,10 +208,8 @@ def create_app(test_config=None):
             provider = (request.form.get("provider") or "").strip().lower()
             allowed_providers = {
                 "wave": "Wave",
-                "qmoney": "QMoney",
-                "afrimoney": "AfriMoney",
                 "aps": "APS",
-                "bank_transfer": "Bank transfer",
+                "zona": "Zona",
             }
             if provider not in allowed_providers:
                 flash("Please select a payment method.", "error")
