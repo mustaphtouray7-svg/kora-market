@@ -1,1 +1,27 @@
-{% extends "base.html" %}{% block title %}Customers | Kora Market{% endblock %}{% block content %}<section class="panel"><div class="panel-header"><div><p class="eyebrow">Customers</p><h1>Customers</h1></div><a class="button button-secondary" href="{{ url_for('auth.dashboard') }}">Dashboard</a></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Name</th><th>Phone</th><th>Orders</th><th>Joined</th></tr></thead><tbody>{% for customer in customers %}<tr><td>{{ customer.full_name }}</td><td>{{ customer.phone_number }}</td><td>{{ customer.orders|length }}</td><td>{{ customer.created_at.strftime('%Y-%m-%d') }}</td></tr>{% else %}<tr><td colspan="4">No customers yet.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Customers | Kora Market{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div><p class="eyebrow">Customer records</p><h1>Customers</h1><p class="muted">Search customers by name or phone number.</p></div>
+    <a class="button button-secondary" href="{{ url_for('auth.dashboard') }}">Dashboard</a>
+  </div>
+  <form method="get" action="{{ url_for('auth.customers') }}" class="search-form">
+    <label for="customer-search">Customer name or phone</label>
+    <div class="search-controls">
+      <input id="customer-search" type="search" name="q" value="{{ search }}" placeholder="Enter customer name or phone number">
+      <button class="button" type="submit">Search</button>
+      {% if search %}<a class="button button-secondary" href="{{ url_for('auth.customers') }}">Clear</a>{% endif %}
+    </div>
+  </form>
+  {% if search %}<p class="muted">Showing results for “{{ search }}” — {{ customers|length }} found.</p>{% endif %}
+  <div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Name</th><th>Phone</th><th>Orders</th><th>Joined</th></tr></thead>
+    <tbody>
+    {% for customer in customers %}
+      <tr><td>{{ customer.full_name }}</td><td>{{ customer.phone_number }}</td><td><a href="{{ url_for('auth.orders', q=customer.full_name) }}">{{ customer.orders|length }} · View orders</a></td><td>{{ customer.created_at.strftime('%Y-%m-%d') }}</td></tr>
+    {% else %}<tr><td colspan="4">No customers found. Check the spelling or phone number.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}
