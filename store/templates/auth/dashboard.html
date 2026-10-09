@@ -8,7 +8,7 @@
       <h1>Business dashboard</h1>
       <p class="dashboard-intro">Manage your store, products, orders and customers from one place.</p>
     </div>
-    <a class="button" href="{{ url_for('auth.new_product') }}">Add a product</a>
+    {% if current_user.is_admin %}<a class="button" href="{{ url_for('auth.new_product') }}">Add a product</a>{% endif %}
   </div>
 
   <div class="dashboard-grid dashboard-metrics">
@@ -35,7 +35,7 @@
   </div>
   <div class="admin-actions">
     <a class="admin-action-card" href="{{ url_for('auth.products') }}">
-      <span class="action-kicker">01 / INVENTORY</span><h3>Products and images</h3><p>Add new items, update prices and stock, change product images, or remove products.</p><span class="action-arrow">Open products →</span>
+      <span class="action-kicker">01 / INVENTORY</span><h3>Products</h3><p>View products, prices and available stock.</p><span class="action-arrow">Open products →</span>
     </a>
     <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
       <span class="action-kicker">02 / SALES</span><h3>Orders and payments</h3><p>Review customer orders and check their payment status.</p><span class="action-arrow">Open orders →</span>
