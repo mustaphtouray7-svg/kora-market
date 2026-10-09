@@ -13,6 +13,7 @@
         <a class="button button-secondary" href="{{ url_for('cart') }}">View cart{% set cart_count = session.get("cart", {}).values() | sum %}{% if cart_count %} ({{ cart_count }}){% endif %}</a>
         <a class="button button-secondary" href="{{ url_for('catalog') }}">Start shopping</a>
       </div>
+    </div>
   </section>
 
   <section class="home-shop-section">
