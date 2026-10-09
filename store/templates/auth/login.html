@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Staff sign in | Kora Market{% endblock %}
+{% block title %}Admin sign in | Kora Market{% endblock %}
 {% block content %}
   <section class="auth-card">
-    <p class="eyebrow">Staff access</p>
+    <p class="eyebrow">Administrator access</p>
     <h1>Sign in to your dashboard</h1>
-    <p class="muted">Use your authorized administrator account.</p>
+    <p class="muted">Enter your administrator Gmail address and password.</p>
     <form method="post" novalidate>
       {{ form.hidden_tag() }}
       <div class="field">
         {{ form.username.label }}
-        {{ form.username(autocomplete="username", autocapitalize="none") }}
+        {{ form.username(type="email", autocomplete="username", autocapitalize="none", placeholder="you@gmail.com") }}
         {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
       </div>
       <div class="field">
