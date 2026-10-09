@@ -219,6 +219,19 @@ def create_app(test_config=None):
         if not full_name or not phone_number or not payer_phone or provider not in allowed:
             flash("Please complete your details, select Wave, APS, or Yonna, and enter the payment phone number.", "error")
             return redirect(url_for("checkout"))
+
+        # Check that the chosen provider is configured before creating customer,
+        # order, and payment records. This prevents duplicate pending orders when
+        # a shopper retries checkout while payment credentials are still missing.
+        if provider == "wave" and not app.config.get("WAVE_API_KEY"):
+            flash("Wave payments are not connected yet. Please contact the store before retrying.", "error")
+            return redirect(url_for("checkout"))
+        if provider in {"aps", "yonna"} and not all(
+            app.config.get(key) for key in ("APS_APP_TOKEN", "APS_APP_SECRET", "APS_MERCHANT_GUID")
+        ):
+            flash(f"{allowed[provider]} payments are not connected yet. Please contact the store before retrying.", "error")
+            return redirect(url_for("checkout"))
+
         for item in items:
             if item["quantity"] > item["product"].stock_quantity:
                 flash(f"Only {item['product'].stock_quantity} unit(s) of {item['product'].name} are currently available.", "error")
