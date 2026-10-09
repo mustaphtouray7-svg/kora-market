@@ -11,6 +11,28 @@ app = create_app()
 with app.app_context():
     upgrade()
 
+    # Sync the administrator credentials from Render environment variables.
+    # Secrets stay in Render, not in source control.
+    import os
+    from store.models import AdminUser
+
+    admin_email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
+    admin_password = os.environ.get("ADMIN_PASSWORD")
+    if admin_email and admin_password:
+        admin = AdminUser.query.filter_by(username=admin_email).first()
+        if admin is None:
+            # Reuse the existing first admin if present, so the configured
+            # credentials replace the old login instead of creating a duplicate.
+            admin = AdminUser.query.order_by(AdminUser.id.asc()).first()
+        if admin is None:
+            admin = AdminUser(username=admin_email)
+            db.session.add(admin)
+        else:
+            admin.username = admin_email
+        admin.set_password(admin_password)
+        admin.is_active = True
+        db.session.commit()
+
     from store.models import Branch, Product
 
     starter_branches = [
