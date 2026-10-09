@@ -37,7 +37,7 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a>
-        <div class="footer-links"><a href="{{ url_for('auth.login') }}">Staff Sign In</a><span>Customer Sign In</span></div>
+        <div class="footer-links"><span>Customer Sign In</span><a href="{{ url_for('auth.login') }}">Staff Sign In</a></div>
         <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
       </div>
     </footer>
