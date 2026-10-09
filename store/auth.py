@@ -1,9 +1,10 @@
 from decimal import Decimal
 from functools import wraps
 
-from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
@@ -102,8 +103,17 @@ def dashboard():
 @auth.get("/admin/orders")
 @login_required
 def orders():
-    order_list = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template("auth/orders.html", orders=order_list)
+    search = (request.args.get("q") or "").strip()
+    query = Order.query.join(Customer)
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(or_(
+            Order.order_number.ilike(pattern),
+            Customer.full_name.ilike(pattern),
+            Customer.phone_number.ilike(pattern),
+        ))
+    order_list = query.order_by(Order.created_at.desc()).all()
+    return render_template("auth/orders.html", orders=order_list, search=search)
 
 @auth.get("/admin/orders/<int:order_id>")
 @login_required
@@ -114,8 +124,16 @@ def order_detail(order_id):
 @auth.get("/admin/customers")
 @login_required
 def customers():
-    customer_list = Customer.query.order_by(Customer.created_at.desc()).all()
-    return render_template("auth/customers.html", customers=customer_list)
+    search = (request.args.get("q") or "").strip()
+    query = Customer.query
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(or_(
+            Customer.full_name.ilike(pattern),
+            Customer.phone_number.ilike(pattern),
+        ))
+    customer_list = query.order_by(Customer.created_at.desc()).all()
+    return render_template("auth/customers.html", customers=customer_list, search=search)
 
 
 @auth.get("/admin/products")
