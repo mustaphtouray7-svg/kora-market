@@ -1,35 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Cart | Kora Market{% endblock %}
+{% block title %}Your Cart | Kora Market{% endblock %}
 {% block content %}
-  <section class="panel">
-    <div class="panel-header">
-      <div><p class="eyebrow">Basket</p><h1>Your cart</h1></div>
+  <section class="panel cart-panel">
+    <div class="panel-header cart-heading">
+      <div>
+        <p class="eyebrow">Your shopping basket</p>
+        <h1>Your cart</h1>
+        <p class="cart-intro">Review your items and change quantities before checkout.</p>
+      </div>
       <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
     </div>
+
     {% if items %}
-      {% for item in items %}
-        <div class="cart-item">
-          <div>
-            <h2>{{ item.product.name }}</h2>
-            <p>{{ "%.2f" | format(item.product.price) }} GMD each</p>
-          </div>
-          <form class="quantity-control" method="post" action="{{ url_for('update_cart', product_id=item.product.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button name="quantity" value="{{ item.quantity - 1 }}" type="submit" aria-label="Decrease quantity" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
-            <span>{{ item.quantity }}</span>
-            <button name="quantity" value="{{ item.quantity + 1 }}" type="submit" aria-label="Increase quantity" {% if item.quantity >= item.product.stock_quantity %}disabled{% endif %}>+</button>
-          </form>
-          <div class="cart-price">{{ "%.2f" | format(item.line_total) }} GMD</div>
-          <form method="post" action="{{ url_for('remove_from_cart', product_id=item.product.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="danger-button">Remove</button>
-          </form>
+      <div class="cart-items">
+        {% for item in items %}
+          <article class="cart-item">
+            <div class="cart-product">
+              <h2>{{ item.product.name }}</h2>
+              <p>{{ "%.2f" | format(item.product.price) }} GMD each</p>
+            </div>
+            <div class="cart-quantity">
+              <span class="cart-label">Quantity</span>
+              <form class="quantity-control" method="post" action="{{ url_for('update_cart', product_id=item.product.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button name="quantity" value="{{ item.quantity - 1 }}" type="submit" aria-label="Decrease {{ item.product.name }} quantity" {% if item.quantity <= 1 %}disabled{% endif %}>−</button>
+                <span aria-live="polite">{{ item.quantity }}</span>
+                <button name="quantity" value="{{ item.quantity + 1 }}" type="submit" aria-label="Increase {{ item.product.name }} quantity" {% if item.quantity >= item.product.stock_quantity %}disabled{% endif %}>+</button>
+              </form>
+            </div>
+            <div class="cart-line-total">
+              <span class="cart-label">Item total</span>
+              <strong>{{ "%.2f" | format(item.line_total) }} GMD</strong>
+            </div>
+            <form class="cart-remove-form" method="post" action="{{ url_for('remove_from_cart', product_id=item.product.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="danger-button">Remove</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+
+      <div class="cart-bottom">
+        <div class="cart-summary">
+          <span>Cart total</span>
+          <strong>{{ "%.2f" | format(total) }} GMD</strong>
         </div>
-      {% endfor %}
-      <div class="cart-summary"><span>Total</span><strong>{{ "%.2f" | format(total) }} GMD</strong></div>
-      <div class="toolbar"><a class="button" href="{{ url_for('checkout') }}">Proceed to checkout</a></div>
+        <p class="cart-total-note">Your total updates when you change an item quantity.</p>
+        <div class="cart-checkout-actions">
+          <a class="button button-secondary" href="{{ url_for('catalog') }}">Keep shopping</a>
+          <a class="button" href="{{ url_for('checkout') }}">Proceed to checkout</a>
+        </div>
+      </div>
     {% else %}
-      <p class="empty-state">Your cart is empty.</p>
+      <div class="cart-empty">
+        <h2>Your cart is empty</h2>
+        <p>Browse the shop and add products here. You can adjust quantities before checkout.</p>
+        <a class="button" href="{{ url_for('catalog') }}">Browse products</a>
+      </div>
     {% endif %}
   </section>
 {% endblock %}
