@@ -1,32 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Kora Market | Shop local{% endblock %}
+{% block title %}Kora Market{% endblock %}
 {% block content %}
   <section class="welcome hero">
     <div class="hero-copy">
-      <p class="eyebrow">Kora Market · Shop local</p>
-      <h1>Everyday essentials. A simpler way to shop.</h1>
-      <p class="welcome-copy">Find what you need, add your items to the cart, review your quantities and total, then continue to checkout when you are ready.</p>
       <form class="search-bar home-search" method="get" action="{{ url_for('catalog') }}">
         <label class="sr-only" for="home-q">Search products</label>
         <input id="home-q" name="q" type="search" placeholder="What are you looking for?" autocomplete="off">
-        <button class="button" type="submit">Search shop</button>
+        <button class="button" type="submit">Search</button>
       </form>
       <div class="toolbar">
         <a class="button" href="{{ url_for('catalog') }}">Browse all products</a>
         <a class="button button-secondary" href="{{ url_for('cart') }}">View cart{% set cart_count = session.get("cart", {}).values() | sum %}{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+        <a class="button button-secondary" href="{{ url_for('catalog') }}">Start shopping</a>
       </div>
-      <div class="hero-benefits" aria-label="Shopping steps">
-        <span><strong>01</strong> Browse products</span>
-        <span><strong>02</strong> Review your cart</span>
-        <span><strong>03</strong> Checkout</span>
-      </div>
-    </div>
-    <aside class="hero-side" aria-label="Shopping guide">
-      <p class="eyebrow">Your shopping, made clear</p>
-      <div class="hero-side-item"><span class="hero-side-number">1</span><div><strong>Choose your items</strong><p>Explore the available products and details.</p></div></div>
-      <div class="hero-side-item"><span class="hero-side-number">2</span><div><strong>Control your quantities</strong><p>Use plus and minus in your cart. Item totals recalculate when you update.</p></div></div>
-      <div class="hero-side-item"><span class="hero-side-number">3</span><div><strong>Check before checkout</strong><p>Review the full amount before selecting a payment method.</p></div></div>
-    </aside>
   </section>
 
   <section class="home-shop-section">
@@ -60,9 +46,4 @@
     {% endif %}
   </section>
 
-  <section class="home-help-strip">
-    <div><p class="eyebrow">Need a quick start?</p><h2>Shopping in three simple steps</h2></div>
-    <div class="home-help-steps"><span>Browse and add products</span><span>Adjust quantities in your cart</span><span>Confirm your order details at checkout</span></div>
-    <a class="button" href="{{ url_for('catalog') }}">Start shopping</a>
-  </section>
 {% endblock %}
