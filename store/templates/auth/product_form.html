@@ -34,11 +34,22 @@
           {% for error in form.stock_quantity.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
         </div>
       </div>
+      {% if product and product.image_url %}
+      <div class="field">
+        <label>Current image</label>
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" style="display:block;width:180px;height:140px;object-fit:cover;border-radius:10px;margin:8px 0 12px">
+      </div>
+      {% endif %}
       <div class="field">
         {{ form.image_url.label }}
         {{ form.image_url() }}
         {% for error in form.image_url.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        <p class="muted">Paste a direct image URL to add or replace the product image. Leave it empty to remove the image.</p>
       </div>
+      <label class="checkbox-row">
+        {{ form.remove_image() }}
+        <span>{{ form.remove_image.label.text }}</span>
+      </label>
       <label class="checkbox-row">
         {{ form.is_active() }}
         <span>{{ form.is_active.label.text }}</span>
