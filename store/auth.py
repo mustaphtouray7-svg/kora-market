@@ -8,7 +8,7 @@ from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, Str
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
 
 from store.extensions import db
-from store.models import AdminUser, Branch, Customer, Order, Product
+from store.models import AdminUser, Branch, Customer, Order, OrderItem, Product
 
 auth = Blueprint("auth", __name__)
 
@@ -34,6 +34,7 @@ class ProductForm(FlaskForm):
     description = TextAreaField("Description", validators=[Optional(), Length(max=2000)])
     price = DecimalField("Price", places=2, validators=[DataRequired()])
     image_url = StringField("Image URL", validators=[Optional(), Length(max=500)])
+    remove_image = BooleanField("Remove current image")
     stock_quantity = IntegerField(
         "Stock quantity",
         validators=[DataRequired(), NumberRange(min=0)],
@@ -119,7 +120,7 @@ def create_product():
             name=form.name.data.strip(),
             description=(form.description.data or "").strip(),
             price=Decimal(str(form.price.data)),
-            image_url=(form.image_url.data or "").strip() or None,
+            image_url=None if form.remove_image.data else ((form.image_url.data or "").strip() or None),
             stock_quantity=form.stock_quantity.data,
             is_active=form.is_active.data,
         )
@@ -152,7 +153,7 @@ def update_product(product_id):
         product.name = form.name.data.strip()
         product.description = (form.description.data or "").strip()
         product.price = Decimal(str(form.price.data))
-        product.image_url = (form.image_url.data or "").strip() or None
+        product.image_url = None if form.remove_image.data else ((form.image_url.data or "").strip() or None)
         product.stock_quantity = form.stock_quantity.data
         product.is_active = form.is_active.data
         try:
@@ -173,6 +174,20 @@ def toggle_product(product_id):
     product.is_active = not product.is_active
     db.session.commit()
     flash(f"Product '{product.name}' is now {'active' if product.is_active else 'inactive'}.", "success")
+    return redirect(url_for("auth.products"))
+
+
+@auth.post("/admin/products/<int:product_id>/delete")
+@login_required
+def delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    # Keep historical order lines intact while removing the catalog product.
+    OrderItem.query.filter_by(product_id=product.id).update(
+        {OrderItem.product_id: None}, synchronize_session=False
+    )
+    db.session.delete(product)
+    db.session.commit()
+    flash(f"Product '{product.name}' was deleted.", "success")
     return redirect(url_for("auth.products"))
 
 
