@@ -16,10 +16,10 @@
       <p>{{ product.description or 'Freshly stocked and ready for your next pick-up.' }}</p>
       <div class="detail-meta">
         <span>{{ product.stock_quantity }} available</span>
-        <span>In stock</span>
+        <span class="{{ 'stock-out' if product.stock_quantity < 1 else 'stock-in' }}">{{ 'Out of stock' if product.stock_quantity < 1 else 'In stock' }}</span>
       </div>
       <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="button" type="submit">Add to cart</button>
+        <button class="button" type="submit" {% if product.stock_quantity < 1 %}disabled{% endif %}>{{ 'Out of stock' if product.stock_quantity < 1 else 'Add to cart' }}</button>
       </form>
       <div class="toolbar">
         <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
