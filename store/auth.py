@@ -181,13 +181,14 @@ def toggle_product(product_id):
 @login_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
+    product_name = product.name
     # Keep historical order lines intact while removing the catalog product.
     OrderItem.query.filter_by(product_id=product.id).update(
         {OrderItem.product_id: None}, synchronize_session=False
     )
     db.session.delete(product)
     db.session.commit()
-    flash(f"Product '{product.name}' was deleted.", "success")
+    flash(f"Product '{product_name}' was deleted.", "success")
     return redirect(url_for("auth.products"))
 
 
