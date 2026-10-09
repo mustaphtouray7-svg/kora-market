@@ -2,21 +2,39 @@
 {% block title %}Kora Market | Shop local{% endblock %}
 {% block content %}
   <section class="welcome hero">
-    <p class="eyebrow">A new way to shop local</p>
-    <h1>Your next favorite find is just around the corner.</h1>
-    <p class="welcome-copy">Discover available offerings from our local business, with staff tools kept separate and secure.</p>
-    <form class="search-bar" method="get" action="{{ url_for('catalog') }}"><label class="sr-only" for="home-q">Search products</label><input id="home-q" name="q" type="search" placeholder="Search products..." autocomplete="off"><button class="button" type="submit">Search</button></form><div class="toolbar">
-      <a class="button" href="{{ url_for('catalog') }}">Browse products</a>
-      <a class="button button-secondary" href="{{ url_for('auth.login') }}">Staff sign in</a>
+    <div class="hero-copy">
+      <p class="eyebrow">Kora Market · Shop local</p>
+      <h1>Everyday essentials. A simpler way to shop.</h1>
+      <p class="welcome-copy">Find what you need, add your items to the cart, review your quantities and total, then continue to checkout when you are ready.</p>
+      <form class="search-bar home-search" method="get" action="{{ url_for('catalog') }}">
+        <label class="sr-only" for="home-q">Search products</label>
+        <input id="home-q" name="q" type="search" placeholder="What are you looking for?" autocomplete="off">
+        <button class="button" type="submit">Search shop</button>
+      </form>
+      <div class="toolbar">
+        <a class="button" href="{{ url_for('catalog') }}">Browse all products</a>
+        <a class="button button-secondary" href="{{ url_for('cart') }}">View cart{% set cart_count = session.get("cart", {}).values() | sum %}{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+      </div>
+      <div class="hero-benefits" aria-label="Shopping steps">
+        <span><strong>01</strong> Browse products</span>
+        <span><strong>02</strong> Review your cart</span>
+        <span><strong>03</strong> Checkout</span>
+      </div>
     </div>
+    <aside class="hero-side" aria-label="Shopping guide">
+      <p class="eyebrow">Your shopping, made clear</p>
+      <div class="hero-side-item"><span class="hero-side-number">1</span><div><strong>Choose your items</strong><p>Explore the available products and details.</p></div></div>
+      <div class="hero-side-item"><span class="hero-side-number">2</span><div><strong>Control your quantities</strong><p>Use plus and minus in your cart. Item totals recalculate when you update.</p></div></div>
+      <div class="hero-side-item"><span class="hero-side-number">3</span><div><strong>Check before checkout</strong><p>Review the full amount before selecting a payment method.</p></div></div>
+    </aside>
   </section>
 
-  {% if products %}
-    <section class="catalog-preview">
-      <div class="catalog-header compact">
-        <p class="eyebrow">Featured</p>
-        <h2>Popular picks</h2>
-      </div>
+  <section class="home-shop-section">
+    <div class="home-section-heading">
+      <div><p class="eyebrow">Start exploring</p><h2>Products to discover</h2><p>Browse what is currently available in the shop.</p></div>
+      <a class="text-link" href="{{ url_for('catalog') }}">View all products →</a>
+    </div>
+    {% if products %}
       <div class="product-grid preview-grid">
         {% for product in products[:4] %}
           <article class="product-card">
@@ -28,11 +46,23 @@
             <div class="product-copy">
               <h2>{{ product.name }}</h2>
               <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
-              <a href="{{ url_for('product_detail', product_id=product.id) }}">View details</a>
+              <a href="{{ url_for('product_detail', product_id=product.id) }}">View product details →</a>
             </div>
           </article>
         {% endfor %}
       </div>
-    </section>
-  {% endif %}
+    {% else %}
+      <div class="home-empty">
+        <h3>New products are on the way</h3>
+        <p>There are no active products to display right now. Please check back soon.</p>
+        <a class="button button-secondary" href="{{ url_for('catalog') }}">Open shop</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="home-help-strip">
+    <div><p class="eyebrow">Need a quick start?</p><h2>Shopping in three simple steps</h2></div>
+    <div class="home-help-steps"><span>Browse and add products</span><span>Adjust quantities in your cart</span><span>Confirm your order details at checkout</span></div>
+    <a class="button" href="{{ url_for('catalog') }}">Start shopping</a>
+  </section>
 {% endblock %}
