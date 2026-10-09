@@ -1,1 +1,16 @@
-{% extends "base.html" %}{% block title %}Orders | Kora Market{% endblock %}{% block content %}<section class="panel"><div class="panel-header"><div><p class="eyebrow">Sales</p><h1>Orders</h1></div><a class="button button-secondary" href="{{ url_for('auth.dashboard') }}">Dashboard</a></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead><tbody>{% for order in orders %}<tr><td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">{{ order.order_number }}</a></td><td>{{ order.customer.full_name }}<br><span class="muted">{{ order.customer.phone_number }}</span></td><td>{{ "%.2f"|format(order.total) }} {{ order.currency }}</td><td>{{ order.payment_status|title }}</td><td>{{ order.status|replace('_',' ')|title }}</td><td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>{% else %}<tr><td colspan="6">No orders yet.</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Orders | Kora Market{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header"><div><p class="eyebrow">Sales</p><h1>Orders and customer purchases</h1><p class="muted">Search by customer name, phone number or order number.</p></div><a class="button button-secondary" href="{{ url_for('auth.dashboard') }}">Dashboard</a></div>
+  <form method="get" action="{{ url_for('auth.orders') }}" class="search-form">
+    <label for="order-search">Customer or order</label>
+    <div class="search-controls"><input id="order-search" type="search" name="q" value="{{ search }}" placeholder="Customer name, phone or order number"><button class="button" type="submit">Search</button>{% if search %}<a class="button button-secondary" href="{{ url_for('auth.orders') }}">Clear</a>{% endif %}</div>
+  </form>
+  {% if search %}<p class="muted">Showing results for “{{ search }}” — {{ orders|length }} found.</p>{% endif %}
+  <div class="table-wrap"><table class="data-table"><thead><tr><th>Order / Receipt</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th></tr></thead><tbody>
+  {% for order in orders %}<tr><td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">{{ order.order_number }}</a>{% if order.receipt %}<br><span class="muted">Receipt: {{ order.receipt.receipt_number }}</span>{% endif %}</td><td>{{ order.customer.full_name }}<br><span class="muted">{{ order.customer.phone_number }}</span></td><td>{% for item in order.items %}{{ item.product_name }} × {{ item.quantity }}{% if not loop.last %}<br>{% endif %}{% endfor %}</td><td>{{ "%.2f"|format(order.total) }} {{ order.currency }}</td><td>{{ order.payment_status|title }}</td><td>{{ order.status|replace('_',' ')|title }}</td><td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+  {% else %}<tr><td colspan="7">No matching orders found.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
