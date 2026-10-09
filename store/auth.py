@@ -1,12 +1,11 @@
 from decimal import Decimal
 
-from flask import Blueprint, current_app, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
-from wtforms import BooleanField, DecimalField, FileField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
-from flask_wtf.file import FileAllowed
 
 from store.extensions import db
 from store.models import AdminUser, Branch, Customer, Order, OrderItem, Product
@@ -15,25 +14,9 @@ auth = Blueprint("auth", __name__)
 
 
 def _resolve_product_image(form, current_url=None):
-    """Prefer a device upload, allow a URL as a fallback, and preserve existing images."""
+    """Use an image URL only and preserve existing images when no new URL is entered."""
     if form.remove_image.data:
         return None
-    if form.image_file.data:
-        try:
-            import cloudinary.uploader
-
-            result = cloudinary.uploader.upload(
-                form.image_file.data,
-                folder="kora-market/products",
-                resource_type="image",
-            )
-            return result["secure_url"]
-        except Exception as exc:
-            current_app.logger.exception("Product image upload failed: %s", exc)
-            raise ValueError(
-                "Image upload failed. The image-storage service may not be configured yet. "
-                "Please try again after it is connected."
-            ) from exc
     image_url = (form.image_url.data or "").strip()
     if image_url:
         return image_url
@@ -60,11 +43,7 @@ class ProductForm(FlaskForm):
     name = StringField("Product name", validators=[DataRequired(), Length(max=160)])
     description = TextAreaField("Description", validators=[Optional(), Length(max=2000)])
     price = DecimalField("Price", places=2, validators=[DataRequired()])
-    image_file = FileField(
-        "Upload image from your device",
-        validators=[Optional(), FileAllowed(["jpg", "jpeg", "png", "webp"], "Use a JPG, PNG, or WebP image.")],
-    )
-    image_url = StringField("Image URL (optional alternative)", validators=[Optional(), Length(max=500)])
+    image_url = StringField("Image URL (optional)", validators=[Optional(), Length(max=500)])
     remove_image = BooleanField("Remove current image")
     stock_quantity = IntegerField(
         "Stock quantity",
