@@ -1,22 +1,56 @@
 {% extends "base.html" %}
-{% block title %}Dashboard | Kora Market{% endblock %}
+{% block title %}Admin dashboard | Kora Market{% endblock %}
 {% block content %}
-<section class="panel">
-  <p class="eyebrow">Administrator</p><h1>Business dashboard</h1>
-  <p class="muted">Manage products, branches, customers and orders from one place.</p>
-  <div class="dashboard-grid">
-    <div class="info-tile"><span class="eyebrow">Products</span><strong>{{ product_count }}</strong><a href="{{ url_for('auth.products') }}">Manage products</a></div>
-    <div class="info-tile"><span class="eyebrow">Orders</span><strong>{{ order_count }}</strong><a href="{{ url_for('auth.orders') }}">View orders</a></div>
-    <div class="info-tile"><span class="eyebrow">Customers</span><strong>{{ customer_count }}</strong><a href="{{ url_for('auth.customers') }}">View customers</a></div>
-    <div class="info-tile"><span class="eyebrow">Branches</span><strong>{{ branch_count }}</strong><a href="{{ url_for('auth.branches') }}">Manage branches</a></div>
-    <div class="info-tile"><span class="eyebrow">Payment pending</span><strong>{{ pending_order_count }}</strong><a href="{{ url_for('auth.orders') }}">Review orders</a></div>
+<section class="admin-dashboard">
+  <div class="admin-welcome">
+    <div>
+      <p class="eyebrow">Kora Market · Administration</p>
+      <h1>Business dashboard</h1>
+      <p class="dashboard-intro">Manage your store, products, orders and customers from one place.</p>
+    </div>
+    <a class="button" href="{{ url_for('auth.new_product') }}">Add a product</a>
   </div>
-  <div class="toolbar">
-    <a class="button" href="{{ url_for('auth.products') }}">Products</a>
-    <a class="button button-secondary" href="{{ url_for('auth.orders') }}">Orders</a>
-    <a class="button button-secondary" href="{{ url_for('auth.customers') }}">Customers</a>
-    <a class="button button-secondary" href="{{ url_for('auth.branches') }}">Branches</a>
+
+  <div class="dashboard-grid dashboard-metrics">
+    <a class="info-tile" href="{{ url_for('auth.products') }}">
+      <span class="metric-label">Products</span><strong>{{ product_count }}</strong><span class="tile-link">Manage inventory →</span>
+    </a>
+    <a class="info-tile" href="{{ url_for('auth.orders') }}">
+      <span class="metric-label">Orders</span><strong>{{ order_count }}</strong><span class="tile-link">Review orders →</span>
+    </a>
+    <a class="info-tile" href="{{ url_for('auth.customers') }}">
+      <span class="metric-label">Customers</span><strong>{{ customer_count }}</strong><span class="tile-link">View customers →</span>
+    </a>
+    <a class="info-tile" href="{{ url_for('auth.branches') }}">
+      <span class="metric-label">Branches</span><strong>{{ branch_count }}</strong><span class="tile-link">Manage branches →</span>
+    </a>
+    <a class="info-tile pending-tile" href="{{ url_for('auth.orders') }}">
+      <span class="metric-label">Payments pending</span><strong>{{ pending_order_count }}</strong><span class="tile-link">Check payment status →</span>
+    </a>
   </div>
-  <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
+
+  <div class="admin-section-heading">
+    <div><p class="eyebrow">Quick actions</p><h2>Store management</h2></div>
+    <p>Choose what you want to work on.</p>
+  </div>
+  <div class="admin-actions">
+    <a class="admin-action-card" href="{{ url_for('auth.products') }}">
+      <span class="action-kicker">01 / INVENTORY</span><h3>Products and images</h3><p>Add new items, update prices and stock, change product images, or remove products.</p><span class="action-arrow">Open products →</span>
+    </a>
+    <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
+      <span class="action-kicker">02 / SALES</span><h3>Orders and payments</h3><p>Review customer orders and check their payment status.</p><span class="action-arrow">Open orders →</span>
+    </a>
+    <a class="admin-action-card" href="{{ url_for('auth.customers') }}">
+      <span class="action-kicker">03 / CUSTOMERS</span><h3>Customer records</h3><p>View the customers who have placed orders through your store.</p><span class="action-arrow">Open customers →</span>
+    </a>
+    <a class="admin-action-card" href="{{ url_for('auth.branches') }}">
+      <span class="action-kicker">04 / LOCATIONS</span><h3>Store branches</h3><p>Manage the active branches customers can choose at checkout.</p><span class="action-arrow">Open branches →</span>
+    </a>
+  </div>
+
+  <div class="dashboard-footer">
+    <span>Signed in as administrator</span>
+    <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
+  </div>
 </section>
 {% endblock %}
