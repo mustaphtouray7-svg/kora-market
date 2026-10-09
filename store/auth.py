@@ -5,7 +5,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
 from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
 
 from store.extensions import db
 from store.models import AdminUser, Branch, Customer, Order, Product
@@ -15,7 +15,8 @@ auth = Blueprint("auth", __name__)
 
 class LoginForm(FlaskForm):
     username = StringField(
-        "Username", validators=[DataRequired(), Length(max=80)]
+        "Gmail address",
+        validators=[DataRequired(), Email(), Length(max=80)],
     )
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Sign in")
@@ -54,7 +55,7 @@ def login():
             login_user(admin)
             flash("You are signed in.", "success")
             return redirect(url_for("auth.dashboard"))
-        flash("The username or password is incorrect.", "error")
+        flash("The Gmail address or password is incorrect.", "error")
 
     return render_template("auth/login.html", form=form)
 
@@ -236,7 +237,6 @@ def update_branch(branch_id):
             return render_template("auth/branch_form.html", form=form, branch=branch)
         flash("Branch updated successfully.", "success")
         return redirect(url_for("auth.branches"))
-    return render_template("auth/branch_form.html", form=form, branch=branch)
 
 
 @auth.post("/admin/branches/<int:branch_id>/toggle")
