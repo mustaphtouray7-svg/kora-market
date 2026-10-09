@@ -16,7 +16,8 @@
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
         <a href="{{ url_for('catalog') }}">Shop</a>
-        <a href="{{ url_for('cart') }}">Cart</a>
+        {% set cart_count = session.get("cart", {}).values() | sum %}
+        <a href="{{ url_for('cart') }}">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
         <a href="{{ url_for('auth.login') }}">Admin</a>
       </nav>
     </header>
