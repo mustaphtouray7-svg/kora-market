@@ -20,6 +20,11 @@ class AdminUser(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
 
+    @property
+    def is_admin(self):
+        """Existing AdminUser accounts have administrator permissions."""
+        return True
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
