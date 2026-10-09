@@ -38,7 +38,7 @@
       <div class="footer-inner">
         <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a>
         <p>Simple shopping. Clear totals. A smoother checkout.</p>
-        <div class="footer-links"><a href="{{ url_for('catalog') }}">Shop</a><a href="{{ url_for('cart') }}">Your cart</a><a href="{{ url_for('auth.login') }}">Admin sign in</a></div>
+        <div class="footer-links"><a href="{{ url_for("auth.login") }}">Staff Sign In</a><span>Customer Sign In</span></div>
         <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
       </div>
     </footer>
