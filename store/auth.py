@@ -1,6 +1,7 @@
 from decimal import Decimal
+from functools import wraps
 
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
@@ -11,6 +12,16 @@ from store.extensions import db
 from store.models import AdminUser, Branch, Customer, Order, OrderItem, Product
 
 auth = Blueprint("auth", __name__)
+
+
+def admin_required(view):
+    """Allow write actions only for administrator accounts."""
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, "is_admin", False):
+            abort(403)
+        return view(*args, **kwargs)
+    return wrapped
 
 
 def _resolve_product_image(form, current_url=None):
@@ -116,6 +127,7 @@ def products():
 
 @auth.get("/admin/products/new")
 @login_required
+@admin_required
 def new_product():
     form = ProductForm()
     return render_template("auth/product_form.html", form=form, product=None)
@@ -123,6 +135,7 @@ def new_product():
 
 @auth.post("/admin/products/new")
 @login_required
+@admin_required
 def create_product():
     form = ProductForm()
     if form.validate_on_submit():
@@ -153,6 +166,7 @@ def create_product():
 
 @auth.get("/admin/products/<int:product_id>/edit")
 @login_required
+@admin_required
 def edit_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm(obj=product)
@@ -161,6 +175,7 @@ def edit_product(product_id):
 
 @auth.post("/admin/products/<int:product_id>/edit")
 @login_required
+@admin_required
 def update_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = ProductForm()
@@ -188,6 +203,7 @@ def update_product(product_id):
 
 @auth.post("/admin/products/<int:product_id>/toggle")
 @login_required
+@admin_required
 def toggle_product(product_id):
     product = Product.query.get_or_404(product_id)
     product.is_active = not product.is_active
@@ -198,6 +214,7 @@ def toggle_product(product_id):
 
 @auth.post("/admin/products/<int:product_id>/delete")
 @login_required
+@admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
     product_name = product.name
@@ -220,6 +237,7 @@ def branches():
 
 @auth.get("/admin/branches/new")
 @login_required
+@admin_required
 def new_branch():
     form = BranchForm()
     return render_template("auth/branch_form.html", form=form, branch=None)
@@ -227,6 +245,7 @@ def new_branch():
 
 @auth.post("/admin/branches/new")
 @login_required
+@admin_required
 def create_branch():
     form = BranchForm()
     if form.validate_on_submit():
@@ -249,6 +268,7 @@ def create_branch():
 
 @auth.get("/admin/branches/<int:branch_id>/edit")
 @login_required
+@admin_required
 def edit_branch(branch_id):
     branch = Branch.query.get_or_404(branch_id)
     form = BranchForm(obj=branch)
@@ -257,6 +277,7 @@ def edit_branch(branch_id):
 
 @auth.post("/admin/branches/<int:branch_id>/edit")
 @login_required
+@admin_required
 def update_branch(branch_id):
     branch = Branch.query.get_or_404(branch_id)
     form = BranchForm()
@@ -276,6 +297,7 @@ def update_branch(branch_id):
 
 @auth.post("/admin/branches/<int:branch_id>/toggle")
 @login_required
+@admin_required
 def toggle_branch(branch_id):
     branch = Branch.query.get_or_404(branch_id)
     branch.is_active = not branch.is_active
