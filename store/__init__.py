@@ -118,7 +118,7 @@ def create_app(test_config=None):
         cart[product_id] = current_quantity + 1
         session["cart"] = {str(product_id): quantity for product_id, quantity in cart.items()}
         flash(f"{product.name} added to your cart.", "success")
-        return redirect(url_for("checkout"))
+        return redirect(request.referrer or url_for("catalog"))
 
     @app.post("/cart/update/<int:product_id>")
     def update_cart(product_id):
