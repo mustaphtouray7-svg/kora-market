@@ -12,6 +12,9 @@ class Config:
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    # Neon/serverless PostgreSQL can close idle pooled connections. Verify each
+    # connection before reuse and recycle connections before they become stale.
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 300}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
