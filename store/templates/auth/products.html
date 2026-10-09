@@ -14,6 +14,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th>Image</th>
             <th>Name</th>
             <th>Price</th>
             <th>Stock</th>
@@ -24,12 +25,17 @@
         <tbody>
           {% for product in products %}
             <tr>
+              <td>{% if product.image_url %}<img src="{{ product.image_url }}" alt="{{ product.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px">{% else %}<span class="muted">No image</span>{% endif %}</td>
               <td>{{ product.name }}</td>
               <td>{{ "%.2f" | format(product.price) }} GMD</td>
               <td>{{ product.stock_quantity }}</td>
               <td>{{ 'Active' if product.is_active else 'Inactive' }}</td>
               <td class="action-stack">
                 <a href="{{ url_for('auth.edit_product', product_id=product.id) }}">Edit</a>
+                <form method="post" action="{{ url_for('auth.delete_product', product_id=product.id) }}" onsubmit="return confirm('Delete this product? This cannot be undone.')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit">Delete</button>
+                </form>
                 <form method="post" action="{{ url_for('auth.toggle_product', product_id=product.id) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit">{{ 'Deactivate' if product.is_active else 'Activate' }}</button>
@@ -38,7 +44,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="5">No products have been added yet.</td>
+              <td colspan="6">No products have been added yet.</td>
             </tr>
           {% endfor %}
         </tbody>
