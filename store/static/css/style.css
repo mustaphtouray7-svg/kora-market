@@ -757,3 +757,8 @@ button:disabled { opacity:.45; cursor:not-allowed; }
   .footer-inner { grid-template-columns:1fr; gap:12px; }
   .footer-inner small { grid-column:1; }
 }
+
+
+.stock-in { color:#276749; font-weight:750; }
+.stock-out { color:#a12d2d; font-weight:750; }
+.button:disabled, button:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
