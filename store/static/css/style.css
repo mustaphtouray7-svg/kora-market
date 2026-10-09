@@ -762,3 +762,11 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 .stock-in { color:#276749; font-weight:750; }
 .stock-out { color:#a12d2d; font-weight:750; }
 .button:disabled, button:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
+
+
+/* Staff dashboard customer and order search */
+.search-form { display:grid; gap:8px; margin:20px 0; padding:18px; border:1px solid var(--line); border-radius:14px; background:#f8fbf9; }
+.search-form label { color:var(--green); font-size:.9rem; font-weight:750; }
+.search-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.search-controls input { flex:1 1 260px; min-width:0; min-height:44px; padding:10px 12px; border:1px solid #cbd9d0; border-radius:9px; background:#fff; font:inherit; }
+.search-controls .button { display:inline-flex; align-items:center; justify-content:center; min-height:44px; text-decoration:none; }
