@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#183a35">
+    <meta name="description" content="Browse products, manage your cart and check out with Kora Market.">
     <title>{% block title %}Kora Market{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
@@ -17,7 +18,7 @@
         <a href="{{ url_for('index') }}">Home</a>
         <a href="{{ url_for('catalog') }}">Shop</a>
         {% set cart_count = session.get("cart", {}).values() | sum %}
-        <a href="{{ url_for('cart') }}">Cart{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+        <a class="nav-cart" href="{{ url_for('cart') }}">Cart{% if cart_count %}<span class="nav-cart-count">{{ cart_count }}</span>{% endif %}</a>
         <a href="{{ url_for('auth.login') }}">Admin</a>
       </nav>
     </header>
@@ -33,6 +34,13 @@
       {% endwith %}
       {% block content %}{% endblock %}
     </main>
-    <footer class="site-footer">A thoughtful way to shop local.</footer>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a>
+        <p>Simple shopping. Clear totals. A smoother checkout.</p>
+        <div class="footer-links"><a href="{{ url_for('catalog') }}">Shop</a><a href="{{ url_for('cart') }}">Your cart</a><a href="{{ url_for('auth.login') }}">Admin sign in</a></div>
+        <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
+      </div>
+    </footer>
   </body>
 </html>
