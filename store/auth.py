@@ -5,7 +5,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
 from wtforms import BooleanField, DecimalField, FileField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, FileAllowed, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
+from flask_wtf.file import FileAllowed
 
 from store.extensions import db
 from store.models import AdminUser, Branch, Customer, Order, OrderItem, Product
