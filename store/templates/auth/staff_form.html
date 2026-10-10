@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Create staff account | Kora Market{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <p class="eyebrow">Administrator access</p>
+  <h1>Create staff account</h1>
+  <p class="muted">Use a unique password of at least 12 characters and share it privately. Do not reuse your own password.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.email.label }}
+      {{ form.email(type="email", autocomplete="email", autocapitalize="none", placeholder="staff@gmail.com") }}
+      {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.password.label }}
+      {{ form.password(autocomplete="new-password") }}
+      {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.confirm_password.label }}
+      {{ form.confirm_password(autocomplete="new-password") }}
+      {% for error in form.confirm_password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    {{ form.submit(class_="button button-full") }}
+  </form>
+  <p class="muted"><a href="{{ url_for('auth.staff_accounts') }}">Back to staff accounts</a></p>
+</section>
+{% endblock %}

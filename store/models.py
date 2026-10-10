@@ -32,6 +32,29 @@ class AdminUser(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class StaffUser(UserMixin, db.Model):
+    __tablename__ = "staff_users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(254), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(256), nullable=False)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+
+    @property
+    def is_admin(self):
+        return False
+
+    def get_id(self):
+        return f"staff:{self.id}"
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
 class Branch(db.Model):
     __tablename__ = "branches"
 
@@ -147,6 +170,13 @@ class Receipt(db.Model):
 
 @login_manager.user_loader
 def load_admin_user(user_id):
+    if user_id.startswith("staff:"):
+        staff_id = user_id.split(":", 1)[1]
+        if not staff_id.isdecimal():
+            return None
+        staff = db.session.get(StaffUser, int(staff_id))
+        return staff if staff is not None and staff.is_active else None
     if not user_id.isdecimal():
         return None
-    return db.session.get(AdminUser, int(user_id))
+    admin = db.session.get(AdminUser, int(user_id))
+    return admin if admin is not None and admin.is_active else None
