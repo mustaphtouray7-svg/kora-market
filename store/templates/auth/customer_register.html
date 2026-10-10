@@ -18,6 +18,11 @@
       {% for error in form.phone_number.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
     </div>
     <div class="field">
+      {{ form.address.label }}
+      {{ form.address(autocomplete="street-address", placeholder="Street, area, town/city") }}
+      {% for error in form.address.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
       {{ form.email.label }}
       {{ form.email(type="email", autocomplete="email", autocapitalize="none", placeholder="you@example.com") }}
       {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
