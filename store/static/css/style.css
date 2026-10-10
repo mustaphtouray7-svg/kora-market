@@ -936,3 +936,11 @@ button:disabled { opacity:.45; cursor:not-allowed; }
   line-height: 1.4 !important;
 }
 .checkout-note { max-width: none; }
+
+
+/* Shared contextual back navigation */
+.page-navigation { width: min(100%, 1180px); margin: 0 auto 18px; }
+.back-button { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 9px 14px; border: 1px solid #cbd9d0; border-radius: 10px; color: var(--green); background: #fff; font-size: .9rem; font-weight: 750; text-decoration: none; box-shadow: 0 2px 6px rgb(24 58 53 / 5%); transition: background .15s ease, border-color .15s ease, transform .15s ease; }
+.back-button:hover { background: #edf5ef; border-color: #9db8a7; transform: translateX(-2px); }
+.back-button:focus-visible { outline: 3px solid #91bca4; outline-offset: 3px; }
+@media (max-width: 600px) { .page-navigation { margin-bottom: 14px; } .back-button { min-height: 40px; padding: 8px 12px; } }
