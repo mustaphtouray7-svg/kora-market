@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Staff accounts | Kora Market{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-header">
+    <div><p class="eyebrow">Administrator access</p><h1>Staff accounts</h1><p class="muted">Staff can search customers and view orders and receipts. They cannot change products or branches.</p></div>
+    <a class="button" href="{{ url_for('auth.new_staff_account') }}">Create staff account</a>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Email</th><th>Created</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for staff in staff_list %}
+        <tr>
+          <td>{{ staff.email }}</td>
+          <td>{{ staff.created_at.strftime('%d %b %Y') if staff.created_at else '—' }}</td>
+          <td>{{ 'Active' if staff.is_active else 'Disabled' }}</td>
+          <td>
+            <form method="post" action="{{ url_for('auth.toggle_staff_account', staff_id=staff.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit">{{ 'Disable account' if staff.is_active else 'Enable account' }}</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">No staff accounts have been created yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted"><a href="{{ url_for('auth.dashboard') }}">Back to dashboard</a></p>
+</section>
+{% endblock %}
