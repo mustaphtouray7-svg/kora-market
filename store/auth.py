@@ -98,7 +98,9 @@ def login():
 
 @auth.route("/staff/login", methods=["GET", "POST"])
 def staff_login():
-    if current_user.is_authenticated:
+    # A shared browser session may already be signed in as the administrator.
+    # Let them open the staff sign-in page so they can switch accounts.
+    if current_user.is_authenticated and not getattr(current_user, "is_admin", False):
         return redirect(url_for("auth.dashboard"))
     form = StaffLoginForm()
     if form.validate_on_submit():
