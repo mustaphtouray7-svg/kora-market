@@ -124,7 +124,7 @@ def staff_accounts():
 @login_required
 @admin_required
 def new_staff_account():
-    form = StaffAccountForm()
+    form = StaffAccountForm(email="mustaphamarrenah@gmail.com")
     if form.validate_on_submit():
         email = form.email.data.strip().lower()
         if StaffUser.query.filter_by(email=email).first():
