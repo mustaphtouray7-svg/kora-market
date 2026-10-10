@@ -242,7 +242,8 @@ def create_app(test_config=None):
         full_name = (request.form.get("full_name") or "").strip()
         phone_number = (request.form.get("phone_number") or "").strip()
         address = (request.form.get("address") or "").strip()
-        branch_id = request.form.get("branch_id") or None
+        # Branch IDs are integer primary keys; parse the submitted form value as an integer.
+        branch_id = request.form.get("branch_id", type=int) or None
         provider = (request.form.get("provider") or "").strip().lower()
         payer_phone = (request.form.get("payer_phone_number") or "").strip()
         allowed = {"wave":"Wave","aps":"APS","yonna":"Yonna"}
