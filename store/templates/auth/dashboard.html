@@ -12,18 +12,22 @@
   </div>
 
   <div class="dashboard-grid dashboard-metrics">
+    {% if current_user.is_admin %}
     <a class="info-tile" href="{{ url_for('auth.products') }}">
       <span class="metric-label">Products</span><strong>{{ product_count }}</strong><span class="tile-link">Manage inventory →</span>
     </a>
+    {% endif %}
     <a class="info-tile" href="{{ url_for('auth.orders') }}">
       <span class="metric-label">Orders</span><strong>{{ order_count }}</strong><span class="tile-link">Review orders →</span>
     </a>
     <a class="info-tile" href="{{ url_for('auth.customers') }}">
       <span class="metric-label">Customers</span><strong>{{ customer_count }}</strong><span class="tile-link">View customers →</span>
     </a>
+    {% if current_user.is_admin %}
     <a class="info-tile" href="{{ url_for('auth.branches') }}">
       <span class="metric-label">Branches</span><strong>{{ branch_count }}</strong><span class="tile-link">Manage branches →</span>
     </a>
+    {% endif %}
     <a class="info-tile pending-tile" href="{{ url_for('auth.orders') }}">
       <span class="metric-label">Payments pending</span><strong>{{ pending_order_count }}</strong><span class="tile-link">Check payment status →</span>
     </a>
@@ -34,18 +38,22 @@
     <p>Choose what you want to work on.</p>
   </div>
   <div class="admin-actions">
+    {% if current_user.is_admin %}
     <a class="admin-action-card" href="{{ url_for('auth.products') }}">
       <span class="action-kicker">01 / INVENTORY</span><h3>Products</h3><p>View products, prices and available stock.</p><span class="action-arrow">Open products →</span>
     </a>
+    {% endif %}
     <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
       <span class="action-kicker">02 / SALES</span><h3>Orders and payments</h3><p>Review customer orders and check their payment status.</p><span class="action-arrow">Open orders →</span>
     </a>
     <a class="admin-action-card" href="{{ url_for('auth.customers') }}">
       <span class="action-kicker">03 / CUSTOMERS</span><h3>Customer records</h3><p>View the customers who have placed orders through your store.</p><span class="action-arrow">Open customers →</span>
     </a>
+    {% if current_user.is_admin %}
     <a class="admin-action-card" href="{{ url_for('auth.branches') }}">
       <span class="action-kicker">04 / LOCATIONS</span><h3>Store branches</h3><p>Manage the active branches customers can choose at checkout.</p><span class="action-arrow">Open branches →</span>
     </a>
+    {% endif %}
     {% if current_user.is_admin %}
     <a class="admin-action-card" href="{{ url_for('auth.staff_accounts') }}">
       <span class="action-kicker">05 / TEAM ACCESS</span><h3>Staff accounts</h3><p>Create staff sign-ins and disable access when needed.</p><span class="action-arrow">Manage staff →</span>
