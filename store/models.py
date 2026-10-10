@@ -98,6 +98,7 @@ class Order(db.Model):
     )
     branch_id = db.Column(db.Integer, db.ForeignKey("branches.id"), nullable=True)
     status = db.Column(db.String(32), nullable=False, default="pending", index=True)
+    collection_status = db.Column(db.String(24), nullable=False, default="not_collected", index=True)
     payment_status = db.Column(
         db.String(32), nullable=False, default="pending", index=True
     )
