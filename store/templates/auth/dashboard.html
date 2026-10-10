@@ -6,7 +6,7 @@
     <div>
       <p class="eyebrow">Kora Market · Administration</p>
       <h1>Business dashboard</h1>
-      <p class="dashboard-intro">Manage your store, products, orders and customers from one place.</p>
+      <p class="dashboard-intro">{% if current_user.is_admin %}Manage your store, products, orders, customers and staff accounts from one place.{% else %}Search customer records and review orders, payments and receipts.{% endif %}</p>
     </div>
     {% if current_user.is_admin %}<a class="button" href="{{ url_for('auth.new_product') }}">Add a product</a>{% endif %}
   </div>
@@ -46,10 +46,15 @@
     <a class="admin-action-card" href="{{ url_for('auth.branches') }}">
       <span class="action-kicker">04 / LOCATIONS</span><h3>Store branches</h3><p>Manage the active branches customers can choose at checkout.</p><span class="action-arrow">Open branches →</span>
     </a>
+    {% if current_user.is_admin %}
+    <a class="admin-action-card" href="{{ url_for('auth.staff_accounts') }}">
+      <span class="action-kicker">05 / TEAM ACCESS</span><h3>Staff accounts</h3><p>Create staff sign-ins and disable access when needed.</p><span class="action-arrow">Manage staff →</span>
+    </a>
+    {% endif %}
   </div>
 
   <div class="dashboard-footer">
-    <span>Signed in as administrator</span>
+    <span>Signed in as {{ "administrator" if current_user.is_admin else "staff" }}</span>
     <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
   </div>
 </section>
