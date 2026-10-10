@@ -7,9 +7,10 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="checkout-section">
       <h2>1. Your details</h2>
+      {% if customer_account %}<p class="checkout-note">You are signed in as {{ customer_account.email }}.</p>{% else %}<p class="checkout-note"><a href="{{ url_for('auth.customer_login') }}">Customer sign in</a> or <a href="{{ url_for('auth.customer_register') }}">create an account</a> to keep your customer details together. You can also check out as a guest.</p>{% endif %}
       <div class="field-grid">
-        <div class="field"><label for="full_name">Full name</label><input id="full_name" name="full_name" type="text" required autocomplete="name"></div>
-        <div class="field"><label for="phone_number">Contact phone number</label><input id="phone_number" name="phone_number" type="tel" required autocomplete="tel"></div>
+        <div class="field"><label for="full_name">Full name</label><input id="full_name" name="full_name" type="text" required autocomplete="name" value="{{ customer_account.full_name if customer_account else '' }}"></div>
+        <div class="field"><label for="phone_number">Contact phone number</label><input id="phone_number" name="phone_number" type="tel" required autocomplete="tel" value="{{ customer_account.phone_number if customer_account else '' }}"></div>
       </div>
       <div class="field"><label for="branch_id">Branch (optional)</label><select id="branch_id" name="branch_id"><option value="">Select a preferred branch</option>{% for branch in branches %}<option value="{{ branch.id }}">{{ branch.name }}</option>{% endfor %}</select></div>
     </div>
