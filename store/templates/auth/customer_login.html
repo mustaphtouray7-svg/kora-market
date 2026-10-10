@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Customer Sign In | Kora Market{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <p class="eyebrow">Customer account</p>
+  <h1>Customer Sign In</h1>
+  <p class="muted">Sign in to view your account and recent orders.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.email.label }}
+      {{ form.email(type="email", autocomplete="email", autocapitalize="none", placeholder="you@example.com") }}
+      {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.password(autocomplete="current-password") }}
+      {{ form.password.label }}
+      {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    {{ form.submit(class_="button button-full") }}
+  </form>
+  <p class="customer-auth-switch">New to Kora Market? <a href="{{ url_for('auth.customer_register') }}">Create a customer account</a></p>
+  <p class="customer-auth-switch"><a href="{{ url_for('index') }}">Continue shopping as a guest</a></p>
+</section>
+{% endblock %}
