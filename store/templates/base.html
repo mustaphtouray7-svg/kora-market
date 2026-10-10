@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,13 +7,20 @@
     <meta name="description" content="Browse products, manage your cart and check out with Kora Market.">
     <title>{% block title %}Kora Market{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+      .site-header{direction:rtl}.site-header nav{direction:ltr}.brand-language-group{display:flex;align-items:center;gap:14px;flex-shrink:0}
+      .language-switch{display:inline-flex;gap:4px;padding:4px;border:1px solid #d8e4dc;border-radius:11px;background:#f4f8f5}
+      .language-button{min-height:34px;padding:7px 11px;border:0;border-radius:8px;color:#24483e;background:transparent;font:inherit;font-size:.82rem;font-weight:750;cursor:pointer}
+      .language-button.active{color:#fff;background:#183a35}html[dir="rtl"] body{font-family:Tahoma,"Segoe UI",Arial,sans-serif}
+      html[dir="rtl"] .site-header nav{direction:rtl}html[dir="rtl"] .page-navigation{text-align:right}
+      html[dir="rtl"] .data-table th,html[dir="rtl"] .data-table td{text-align:right}html[dir="rtl"] .search-bar,html[dir="rtl"] .search-controls{direction:rtl}
+      html[dir="rtl"] .field,html[dir="rtl"] .stack-form,html[dir="rtl"] .checkout-section{text-align:right}html[dir="rtl"] .footer-inner{direction:rtl}
+      @media(max-width:760px){.brand-language-group{width:100%;justify-content:space-between}.site-header{align-items:stretch!important}.language-button{padding:7px 9px}}
+    </style>
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{{ url_for('index') }}" aria-label="Kora Market home">
-        <span class="brand-mark" aria-hidden="true">K</span>
-        <span>Kora Market</span>
-      </a>
+      <div class="brand-language-group"><a class="brand" href="{{ url_for('index') }}" aria-label="Kora Market home"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a><div class="language-switch" role="group" aria-label="Choose language"><button type="button" class="language-button active" data-language="en" aria-pressed="true">English</button><button type="button" class="language-button" data-language="ar" aria-pressed="false">العربية</button></div></div>
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
         <a href="{{ url_for('auth.customer_login') }}">Customer Sign In</a>
@@ -55,5 +62,20 @@
         <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
       </div>
     </footer>
+
+<script>
+(()=> {
+const t={
+"Customer Sign In":"دخول العملاء","Back to Dashboard":"العودة إلى لوحة التحكم","Back to My Account":"العودة إلى حسابي","Back to Shop":"العودة إلى المتجر","Go Back":"رجوع","Staff Sign In":"دخول الموظفين","Welcome to Kora Market":"مرحبًا بكم في كورا ماركت","Search products":"ابحث عن المنتجات","What are you looking for?":"ما الذي تبحث عنه؟","Browse all products":"تصفح جميع المنتجات","View cart":"عرض السلة","Start shopping":"ابدأ التسوق","View all products":"عرض جميع المنتجات","Add to cart":"أضف إلى السلة","In stock":"متوفر","Out of stock":"غير متوفر","Your cart is empty":"سلة التسوق فارغة","Shopping cart":"سلة التسوق","Continue shopping":"متابعة التسوق","Proceed to checkout":"المتابعة إلى الدفع","Order summary":"ملخص الطلب","Complete your order":"أكمل طلبك","Your order details and payment choice are all on this page.":"تفاصيل طلبك وطريقة الدفع موجودة في هذه الصفحة.","1. Your details":"١. بياناتك","Full name":"الاسم الكامل","Contact phone number":"رقم هاتف التواصل","Home address":"عنوان المنزل","Street, area, town/city":"الشارع والمنطقة والمدينة","Customer sign in":"دخول العملاء","create an account":"إنشاء حساب","You can also check out as a guest.":"يمكنك أيضًا إتمام الطلب كزائر.","Payment method":"طريقة الدفع","Choose payment method":"اختر طريقة الدفع","Confirm payment":"تأكيد الدفع","Place order":"تأكيد الطلب","Order number":"رقم الطلب","Payment details":"تفاصيل الدفع","Cash on delivery":"الدفع عند الاستلام","Product details":"تفاصيل المنتج","Email address":"البريد الإلكتروني","Confirm password":"تأكيد كلمة المرور","Phone number":"رقم الهاتف","Forgot password?":"هل نسيت كلمة المرور؟","Reset password":"إعادة تعيين كلمة المرور","Remember me":"تذكرني","Don't have an account?":"ليس لديك حساب؟","Already have an account?":"لديك حساب بالفعل؟","My Account":"حسابي","My account":"حسابي","Profile":"الملف الشخصي","Log out":"تسجيل الخروج","Logout":"تسجيل الخروج","Save changes":"حفظ التغييرات","Cancel":"إلغاء","Submit":"إرسال","Dashboard":"لوحة التحكم","Staff dashboard":"لوحة تحكم الموظفين","Admin dashboard":"لوحة تحكم الإدارة","Manage products":"إدارة المنتجات","Manage orders":"إدارة الطلبات","Manage customers":"إدارة العملاء","Manage staff":"إدارة الموظفين","Manage branches":"إدارة الفروع","Add product":"إضافة منتج","Edit product":"تعديل المنتج","Delete product":"حذف المنتج","Add customer":"إضافة عميل","Order status":"حالة الطلب","Customers":"العملاء","Orders":"الطلبات","Status":"الحالة","Date":"التاريخ","Actions":"الإجراءات","Details":"التفاصيل","Search customers or orders":"ابحث عن العملاء أو الطلبات","Search orders":"ابحث عن الطلبات","Search customers":"ابحث عن العملاء","No products found":"لم يتم العثور على منتجات","No orders found":"لم يتم العثور على طلبات","No customers found":"لم يتم العثور على عملاء","Something went wrong. Please try again.":"حدث خطأ. يرجى المحاولة مرة أخرى.","Welcome back":"مرحبًا بعودتك","Sign in to continue":"سجّل الدخول للمتابعة","Please sign in":"يرجى تسجيل الدخول","Customer Account":"حساب العميل","Create Customer Account":"إنشاء حساب عميل","Create your account":"أنشئ حسابك","Pickup branch":"فرع الاستلام","Select a branch":"اختر فرعًا","Branches":"الفروع","Optional":"اختياري","Required":"مطلوب","Current password":"كلمة المرور الحالية","New password":"كلمة المرور الجديدة","Confirm new password":"تأكيد كلمة المرور الجديدة","Update password":"تحديث كلمة المرور","No products are available right now.":"لا توجد منتجات متاحة حاليًا.","Your cart is waiting for products.":"سلتك بانتظار إضافة المنتجات.","Browse products, manage your cart and check out with Kora Market.":"تصفح المنتجات وأدر سلتك وأكمل طلبك مع كورا ماركت.","Home":"الرئيسية","Cart":"السلة","Admin":"الإدارة","Staff":"الموظفون","Search":"بحث","Products":"المنتجات","View product":"عرض المنتج","Description":"الوصف","Price":"السعر","Quantity":"الكمية","Total":"الإجمالي","Subtotal":"المجموع الفرعي","Remove":"إزالة","Update":"تحديث","Checkout":"إتمام الطلب","Available":"متاح","Unavailable":"غير متاح","Login":"تسجيل الدخول","Log In":"تسجيل الدخول","Sign In":"تسجيل الدخول","Register":"إنشاء حساب","Create account":"إنشاء حساب","Create an account":"إنشاء حساب","Email":"البريد الإلكتروني","Password":"كلمة المرور","Account":"الحساب","Save":"حفظ","Back":"رجوع","Customer":"العميل","Order":"الطلب","Name":"الاسم","Action":"الإجراء","Edit":"تعديل","Delete":"حذف","View":"عرض","Welcome":"مرحبًا","Branch":"الفرع","Notes":"ملاحظات"
+};
+const keys=Object.keys(t).sort((a,b)=>b.length-a.length);
+const translate=s=>keys.reduce((v,k)=>v.split(k).join(t[k]),s);
+function saveEnglish(){document.querySelectorAll("body *").forEach(el=>{for(const n of el.childNodes)if(n.nodeType===3&&!Object.prototype.hasOwnProperty.call(n,"enText"))n.enText=n.nodeValue;for(const a of ["placeholder","aria-label","title","alt"])if(el.hasAttribute(a)&&!el.hasAttribute("data-en-"+a))el.setAttribute("data-en-"+a,el.getAttribute(a));});}
+function setLanguage(lang){const ar=lang==="ar";document.documentElement.lang=lang;document.documentElement.dir=ar?"rtl":"ltr";document.querySelectorAll("[data-language]").forEach(b=>{const on=b.dataset.language===lang;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));});document.querySelectorAll("body *").forEach(el=>{if(["SCRIPT","STYLE","NOSCRIPT"].includes(el.tagName))return;for(const n of el.childNodes)if(n.nodeType===3&&Object.prototype.hasOwnProperty.call(n,"enText"))n.nodeValue=ar?translate(n.enText):n.enText;for(const a of ["placeholder","aria-label","title","alt"]){const original=el.getAttribute("data-en-"+a);if(original!==null)el.setAttribute(a,ar?translate(original):original);}});try{localStorage.setItem("kora-market-language",lang)}catch(e){}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-language]");if(b)setLanguage(b.dataset.language);});
+saveEnglish();let lang="en";try{lang=localStorage.getItem("kora-market-language")||"en"}catch(e){}if(lang==="ar")setLanguage("ar");
+new MutationObserver(()=>{saveEnglish();if(document.documentElement.lang==="ar")setLanguage("ar")}).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
   </body>
 </html>
