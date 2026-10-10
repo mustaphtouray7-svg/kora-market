@@ -63,6 +63,8 @@ def create_app(test_config=None):
                     connection.execute(text("ALTER TABLE customers ADD COLUMN email VARCHAR(254)"))
                 if "password_hash" not in customer_columns:
                     connection.execute(text("ALTER TABLE customers ADD COLUMN password_hash VARCHAR(256)"))
+                if "address" not in customer_columns:
+                    connection.execute(text("ALTER TABLE customers ADD COLUMN address VARCHAR(300)"))
                 connection.execute(text(
                     "CREATE UNIQUE INDEX IF NOT EXISTS ix_customers_email ON customers (email)"
                 ))
@@ -239,12 +241,13 @@ def create_app(test_config=None):
             return redirect(url_for("catalog"))
         full_name = (request.form.get("full_name") or "").strip()
         phone_number = (request.form.get("phone_number") or "").strip()
+        address = (request.form.get("address") or "").strip()
         branch_id = request.form.get("branch_id") or None
         provider = (request.form.get("provider") or "").strip().lower()
         payer_phone = (request.form.get("payer_phone_number") or "").strip()
         allowed = {"wave":"Wave","aps":"APS","yonna":"Yonna"}
-        if not full_name or not phone_number or not payer_phone or provider not in allowed:
-            flash("Please complete your details, select Wave, APS, or Yonna, and enter the payment phone number.", "error")
+        if not full_name or not phone_number or len(address) < 5 or len(address) > 300 or not payer_phone or provider not in allowed:
+            flash("Please enter your full name, phone number, and address, select a payment method, and enter the payment phone number.", "error")
             return redirect(url_for("checkout"))
 
         # Check that the chosen provider is configured before creating customer,
@@ -268,8 +271,9 @@ def create_app(test_config=None):
             customer = current_user
             customer.full_name = full_name
             customer.phone_number = phone_number
+            customer.address = address
         else:
-            customer = models.Customer(full_name=full_name, phone_number=phone_number)
+            customer = models.Customer(full_name=full_name, phone_number=phone_number, address=address)
             db.session.add(customer)
         db.session.flush()
         order_number = f"KORA-{datetime.utcnow().strftime('%Y%m%d')}-{(db.session.query(models.Order.id).count()+1):04d}"
