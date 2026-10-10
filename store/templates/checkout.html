@@ -12,6 +12,7 @@
         <div class="field"><label for="full_name">Full name</label><input id="full_name" name="full_name" type="text" required autocomplete="name" value="{{ customer_account.full_name if customer_account else '' }}"></div>
         <div class="field"><label for="phone_number">Contact phone number</label><input id="phone_number" name="phone_number" type="tel" required autocomplete="tel" value="{{ customer_account.phone_number if customer_account else '' }}"></div>
       </div>
+      <div class="field"><label for="address">Home address</label><input id="address" name="address" type="text" required minlength="5" maxlength="300" autocomplete="street-address" placeholder="Street, area, town/city" value="{{ customer_account.address if customer_account and customer_account.address else '' }}"><small>Enter your address so the store has your customer details.</small></div>
       <div class="field"><label for="branch_id">Branch (optional)</label><select id="branch_id" name="branch_id"><option value="">Select a preferred branch</option>{% for branch in branches %}<option value="{{ branch.id }}">{{ branch.name }}</option>{% endfor %}</select></div>
     </div>
     <div class="checkout-section">
