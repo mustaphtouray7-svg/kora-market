@@ -48,14 +48,13 @@ class CustomerRegistrationForm(FlaskForm):
     full_name = StringField("Full name", validators=[DataRequired(), Length(min=2, max=160)])
     phone_number = StringField("Phone number", validators=[DataRequired(), Length(min=6, max=32)])
     address = StringField("Home address", validators=[DataRequired(), Length(min=5, max=300)])
-    email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
     password = PasswordField("Password (at least 8 characters)", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
     submit = SubmitField("Create customer account")
 
 
 class CustomerLoginForm(FlaskForm):
-    email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
+    phone_number = StringField("Phone number", validators=[DataRequired(), Length(min=6, max=32)])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Customer sign in")
 
@@ -137,15 +136,18 @@ def customer_register():
         return redirect(url_for("auth.customer_account"))
     form = CustomerRegistrationForm()
     if form.validate_on_submit():
-        email = form.email.data.strip().lower()
-        if Customer.query.filter_by(email=email).first():
-            flash("An account with that email already exists. Please sign in instead.", "error")
+        phone_number = form.phone_number.data.strip()
+        existing_account = Customer.query.filter(
+            Customer.phone_number == phone_number,
+            Customer.password_hash.isnot(None),
+        ).first()
+        if existing_account:
+            flash("An account with that phone number already exists. Please sign in instead.", "error")
             return render_template("auth/customer_register.html", form=form)
         customer = Customer(
             full_name=form.full_name.data.strip(),
-            phone_number=form.phone_number.data.strip(),
+            phone_number=phone_number,
             address=form.address.data.strip(),
-            email=email,
         )
         customer.set_password(form.password.data)
         db.session.add(customer)
@@ -153,7 +155,7 @@ def customer_register():
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            flash("An account with that email already exists. Please sign in instead.", "error")
+            flash("We could not create the account with those details. Please check and try again.", "error")
             return render_template("auth/customer_register.html", form=form)
         login_user(customer)
         flash("Your customer account has been created.", "success")
@@ -167,13 +169,17 @@ def customer_login():
         return redirect(url_for("auth.customer_account"))
     form = CustomerLoginForm()
     if form.validate_on_submit():
-        email = form.email.data.strip().lower()
-        customer = Customer.query.filter_by(email=email).first()
-        if customer is not None and customer.check_password(form.password.data):
+        phone_number = form.phone_number.data.strip()
+        registered_customers = Customer.query.filter(
+            Customer.phone_number == phone_number,
+            Customer.password_hash.isnot(None),
+        ).all()
+        customer = next((item for item in registered_customers if item.check_password(form.password.data)), None)
+        if customer is not None:
             login_user(customer)
             flash("You are signed in to your customer account.", "success")
             return redirect(url_for("auth.customer_account"))
-        flash("The email address or password is incorrect.", "error")
+        flash("The phone number or password is incorrect.", "error")
     return render_template("auth/customer_login.html", form=form)
 
 
