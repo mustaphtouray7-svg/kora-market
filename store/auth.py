@@ -263,6 +263,8 @@ def dashboard():
 @auth.get("/admin/orders")
 @login_required
 def orders():
+    if getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.customer_account"))
     search = (request.args.get("q") or "").strip()
     query = Order.query.join(Customer)
     if search:
@@ -279,11 +281,15 @@ def orders():
 @login_required
 def order_detail(order_id):
     order = Order.query.get_or_404(order_id)
+    if getattr(current_user, "is_customer", False) and order.customer_id != current_user.id:
+        abort(403)
     return render_template("auth/order_detail.html", order=order)
 
 @auth.post("/admin/orders/<int:order_id>/collection-status")
 @login_required
 def update_collection_status(order_id):
+    if getattr(current_user, "is_customer", False):
+        abort(403)
     order = Order.query.get_or_404(order_id)
     new_status = (request.form.get("collection_status") or "").strip().lower()
     if new_status not in {"collected", "not_collected"}:
@@ -303,6 +309,8 @@ def update_collection_status(order_id):
 @auth.get("/admin/customers")
 @login_required
 def customers():
+    if getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.customer_account"))
     search = (request.args.get("q") or "").strip()
     query = Customer.query
     if search:
