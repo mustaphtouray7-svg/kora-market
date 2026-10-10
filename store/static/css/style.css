@@ -944,3 +944,13 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 .back-button:hover { background: #edf5ef; border-color: #9db8a7; transform: translateX(-2px); }
 .back-button:focus-visible { outline: 3px solid #91bca4; outline-offset: 3px; }
 @media (max-width: 600px) { .page-navigation { margin-bottom: 14px; } .back-button { min-height: 40px; padding: 8px 12px; } }
+
+
+/* Header navigation buttons with a clear background */
+.site-header nav { gap: 10px; }
+.site-header nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 14px; border: 1px solid #d8e4dc; border-radius: 10px; color: #24483e; background: #edf4ef; font-weight: 700; text-decoration: none; transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+.site-header nav a:hover { color: #fff; background: var(--green); border-color: var(--green); box-shadow: 0 4px 12px rgb(24 58 53 / 14%); transform: translateY(-1px); }
+.site-header nav a:focus-visible { outline: 3px solid #91bca4; outline-offset: 3px; }
+.site-header nav .nav-cart-count { color: var(--green); background: #fff; }
+.site-header nav a:hover .nav-cart-count { color: var(--green); background: #fff; }
+@media (max-width: 760px) { .site-header nav { justify-content: flex-start; gap: 8px; } .site-header nav a { min-height: 38px; padding: 8px 11px; border-radius: 9px; font-size: .85rem; } }
