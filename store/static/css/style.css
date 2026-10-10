@@ -912,3 +912,27 @@ button:disabled { opacity:.45; cursor:not-allowed; }
     padding: 10px 11px;
   }
 }
+
+
+/* Customer account pages */
+.customer-auth-switch {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.6;
+  text-align: center;
+}
+.customer-auth-switch a,
+.checkout-note a {
+  color: var(--green);
+  font-weight: 750;
+  text-underline-offset: 3px;
+}
+.customer-account-panel { width: min(100%, 1180px); }
+.customer-account-details .info-tile { align-content: start; }
+.customer-detail-value {
+  overflow-wrap: anywhere;
+  font-size: 1rem !important;
+  line-height: 1.4 !important;
+}
+.checkout-note { max-width: none; }
