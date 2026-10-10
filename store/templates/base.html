@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
       .site-header{direction:rtl}.site-header nav{direction:ltr}.brand-language-group{display:flex;align-items:center;gap:14px;flex-shrink:0}
-      .language-switch{display:inline-flex;gap:4px;padding:4px;border:1px solid #d8e4dc;border-radius:11px;background:#f4f8f5}
-      .language-button{min-height:34px;padding:7px 11px;border:0;border-radius:8px;color:#24483e;background:transparent;font:inherit;font-size:.82rem;font-weight:750;cursor:pointer}
-      .language-button.active{color:#fff;background:#183a35}html[dir="rtl"] body{font-family:Tahoma,"Segoe UI",Arial,sans-serif}
+      .language-switch{display:inline-flex;align-items:center;gap:6px;padding:5px;border:2px solid #183a35;border-radius:12px;background:#fff;box-shadow:0 2px 8px rgb(24 58 53 / 12%)}
+      .language-label{padding:0 5px;color:#183a35;font-size:.82rem;font-weight:800;white-space:nowrap}
+      .language-button{min-height:42px;padding:9px 15px;border:1px solid #183a35;border-radius:8px;color:#183a35;background:#fff;font:inherit;font-size:.9rem;font-weight:800;white-space:nowrap;cursor:pointer}
+      .language-button:hover{background:#e4eee9}.language-button.active{color:#fff;background:#183a35;border-color:#183a35}html[dir="rtl"] body{font-family:Tahoma,"Segoe UI",Arial,sans-serif}
       html[dir="rtl"] .site-header nav{direction:rtl}html[dir="rtl"] .page-navigation{text-align:right}
       html[dir="rtl"] .data-table th,html[dir="rtl"] .data-table td{text-align:right}html[dir="rtl"] .search-bar,html[dir="rtl"] .search-controls{direction:rtl}
       html[dir="rtl"] .field,html[dir="rtl"] .stack-form,html[dir="rtl"] .checkout-section{text-align:right}html[dir="rtl"] .footer-inner{direction:rtl}
@@ -20,7 +21,7 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="brand-language-group"><a class="brand" href="{{ url_for('index') }}" aria-label="Kora Market home"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a><div class="language-switch" role="group" aria-label="Choose language"><button type="button" class="language-button active" data-language="en" aria-pressed="true">English</button><button type="button" class="language-button" data-language="ar" aria-pressed="false">العربية</button></div></div>
+      <div class="brand-language-group"><a class="brand" href="{{ url_for('index') }}" aria-label="Kora Market home"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a><div class="language-switch" role="group" aria-label="Choose language"><span class="language-label" data-language-label>Language:</span><button type="button" class="language-button active" data-language="en" aria-pressed="true">English</button><button type="button" class="language-button" data-language="ar" aria-pressed="false">العربية</button></div></div>
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
         <a href="{{ url_for('auth.customer_login') }}">Customer Sign In</a>
@@ -71,7 +72,7 @@ const t={
 const keys=Object.keys(t).sort((a,b)=>b.length-a.length);
 const translate=s=>keys.reduce((v,k)=>v.split(k).join(t[k]),s);
 function saveEnglish(){document.querySelectorAll("body *").forEach(el=>{for(const n of el.childNodes)if(n.nodeType===3&&!Object.prototype.hasOwnProperty.call(n,"enText"))n.enText=n.nodeValue;for(const a of ["placeholder","aria-label","title","alt"])if(el.hasAttribute(a)&&!el.hasAttribute("data-en-"+a))el.setAttribute("data-en-"+a,el.getAttribute(a));});}
-function setLanguage(lang){const ar=lang==="ar";document.documentElement.lang=lang;document.documentElement.dir=ar?"rtl":"ltr";document.querySelectorAll("[data-language]").forEach(b=>{const on=b.dataset.language===lang;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));});document.querySelectorAll("body *").forEach(el=>{if(["SCRIPT","STYLE","NOSCRIPT"].includes(el.tagName))return;for(const n of el.childNodes)if(n.nodeType===3&&Object.prototype.hasOwnProperty.call(n,"enText"))n.nodeValue=ar?translate(n.enText):n.enText;for(const a of ["placeholder","aria-label","title","alt"]){const original=el.getAttribute("data-en-"+a);if(original!==null)el.setAttribute(a,ar?translate(original):original);}});try{localStorage.setItem("kora-market-language",lang)}catch(e){}}
+function setLanguage(lang){const ar=lang==="ar";document.documentElement.lang=lang;document.documentElement.dir=ar?"rtl":"ltr";const languageLabel=document.querySelector("[data-language-label]");if(languageLabel)languageLabel.textContent=ar?"اللغة:":"Language:";document.querySelectorAll("[data-language]").forEach(b=>{const on=b.dataset.language===lang;b.classList.toggle("active",on);b.setAttribute("aria-pressed",String(on));});document.querySelectorAll("body *").forEach(el=>{if(["SCRIPT","STYLE","NOSCRIPT"].includes(el.tagName))return;for(const n of el.childNodes)if(n.nodeType===3&&Object.prototype.hasOwnProperty.call(n,"enText"))n.nodeValue=ar?translate(n.enText):n.enText;for(const a of ["placeholder","aria-label","title","alt"]){const original=el.getAttribute("data-en-"+a);if(original!==null)el.setAttribute(a,ar?translate(original):original);}});try{localStorage.setItem("kora-market-language",lang)}catch(e){}}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-language]");if(b)setLanguage(b.dataset.language);});
 saveEnglish();let lang="en";try{lang=localStorage.getItem("kora-market-language")||"en"}catch(e){}if(lang==="ar")setLanguage("ar");
 new MutationObserver(()=>{saveEnglish();if(document.documentElement.lang==="ar")setLanguage("ar")}).observe(document.body,{childList:true,subtree:true});
