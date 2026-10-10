@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Staff workspace | Kora Market{% endblock %}
+{% block content %}
+<section class="admin-dashboard staff-dashboard">
+  <div class="admin-welcome">
+    <div>
+      <p class="eyebrow">Kora Market · Staff workspace</p>
+      <h1>Staff dashboard</h1>
+      <p class="dashboard-intro">Welcome. Search customer records, review purchases, check payment status and view available receipts.</p>
+    </div>
+    <a class="button" href="{{ url_for('auth.orders') }}">Find an order</a>
+  </div>
+
+  <div class="dashboard-grid dashboard-metrics">
+    <a class="info-tile" href="{{ url_for('auth.orders') }}">
+      <span class="metric-label">All orders</span><strong>{{ order_count }}</strong><span class="tile-link">Search orders →</span>
+    </a>
+    <a class="info-tile" href="{{ url_for('auth.customers') }}">
+      <span class="metric-label">Customers</span><strong>{{ customer_count }}</strong><span class="tile-link">Search customers →</span>
+    </a>
+    <a class="info-tile pending-tile" href="{{ url_for('auth.orders', q='pending') }}">
+      <span class="metric-label">Payments pending</span><strong>{{ pending_order_count }}</strong><span class="tile-link">Review payment status →</span>
+    </a>
+  </div>
+
+  <div class="admin-section-heading">
+    <div><p class="eyebrow">Your work tools</p><h2>Customer service</h2></div>
+    <p>You have access to customer and order information only.</p>
+  </div>
+  <div class="admin-actions">
+    <a class="admin-action-card" href="{{ url_for('auth.customers') }}">
+      <span class="action-kicker">01 / CUSTOMER LOOKUP</span>
+      <h3>Find a customer</h3>
+      <p>Search by the customer's name or phone number and open their related orders.</p>
+      <span class="action-arrow">Search customers →</span>
+    </a>
+    <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
+      <span class="action-kicker">02 / ORDER LOOKUP</span>
+      <h3>Orders and purchases</h3>
+      <p>Find orders by order number, customer name or phone number. Review purchased items and totals.</p>
+      <span class="action-arrow">Search orders →</span>
+    </a>
+    <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
+      <span class="action-kicker">03 / RECEIPTS & PAYMENTS</span>
+      <h3>Payment and receipt details</h3>
+      <p>Open an order to check its payment status and view its receipt when one has been issued.</p>
+      <span class="action-arrow">View order details →</span>
+    </a>
+  </div>
+
+  <div class="dashboard-footer">
+    <span>Signed in with staff access. Product, branch and staff-account management are restricted.</span>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button button-secondary" type="submit">Sign out</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
