@@ -256,7 +256,7 @@ def create_app(test_config=None):
         if provider == "wave" and not app.config.get("WAVE_API_KEY"):
             flash("Wave payments are not connected yet. Please contact the store before retrying.", "error")
             return redirect(url_for("checkout"))
-        if provider in {"aps", "yonna"} and not all(
+        if provider == "aps" and not all(
             app.config.get(key) for key in ("APS_APP_TOKEN", "APS_APP_SECRET", "APS_MERCHANT_GUID")
         ):
             flash(f"{allowed[provider]} payments are not connected yet. Please contact the store before retrying.", "error")
@@ -287,6 +287,12 @@ def create_app(test_config=None):
         order.total = total
         payment = models.Payment(order=order,provider=allowed[provider],payer_phone_number=payer_phone,status="pending",amount=order.total)
         db.session.add(payment); db.session.commit()
+        if provider == "yonna":
+            # Yonna QR checkout is a manual-transfer flow. Keep the order unpaid
+            # until a staff member verifies the money has arrived in the wallet.
+            session["cart"] = {}
+            return redirect(url_for("payment_pending", order_id=order.id))
+
         try:
             response = _wave_checkout(order,payer_phone) if provider=="wave" else _aps_checkout(order,payer_phone,provider)
             launch_url = response.get("wave_launch_url") if provider=="wave" else (response.get("how") or response.get("url"))
