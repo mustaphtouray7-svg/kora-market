@@ -163,6 +163,13 @@ def dashboard():
     order_count = Order.query.count()
     customer_count = Customer.query.count()
     pending_order_count = Order.query.filter_by(payment_status="pending").count()
+    if not getattr(current_user, "is_admin", False):
+        return render_template(
+            "auth/staff_dashboard.html",
+            order_count=order_count,
+            customer_count=customer_count,
+            pending_order_count=pending_order_count,
+        )
     return render_template(
         "auth/dashboard.html",
         product_count=product_count,
@@ -210,6 +217,7 @@ def customers():
 
 @auth.get("/admin/products")
 @login_required
+@admin_required
 def products():
     product_list = Product.query.order_by(Product.created_at.desc()).all()
     return render_template("auth/products.html", products=product_list)
@@ -320,6 +328,7 @@ def delete_product(product_id):
 
 @auth.get("/admin/branches")
 @login_required
+@admin_required
 def branches():
     branch_list = Branch.query.order_by(Branch.name.asc()).all()
     return render_template("auth/branches.html", branches=branch_list)
