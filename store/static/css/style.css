@@ -770,3 +770,145 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 .search-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
 .search-controls input { flex:1 1 260px; min-width:0; min-height:44px; padding:10px 12px; border:1px solid #cbd9d0; border-radius:9px; background:#fff; font:inherit; }
 .search-controls .button { display:inline-flex; align-items:center; justify-content:center; min-height:44px; text-decoration:none; }
+
+
+/* Spreadsheet-style tables for all admin and staff record lists */
+.panel:has(.data-table) {
+  width: min(100%, 1180px);
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #cbd7d0;
+  border-radius: 12px;
+  background: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: #a8b9ae #edf2ee;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: .9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 14px;
+  border-right: 1px solid #dce4de;
+  border-bottom: 1px solid #dce4de;
+  text-align: left;
+  vertical-align: middle;
+  line-height: 1.45;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  border-right: 0;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: #23463c;
+  background: #e8f0eb;
+  border-bottom: 2px solid #b8c9be;
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: #f7faf8;
+}
+
+.data-table tbody tr:hover {
+  background: #edf5ef;
+}
+
+.data-table td a {
+  color: #1c5947;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.data-table td .muted {
+  display: inline-block;
+  margin: 4px 0 0;
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.data-table .empty-state,
+.data-table tbody td[colspan] {
+  padding: 24px 16px;
+  color: var(--muted);
+  text-align: center;
+  background: #fbfcfb;
+}
+
+.data-table .action-stack,
+.data-table td form {
+  white-space: nowrap;
+}
+
+.data-table td form {
+  display: inline-flex;
+  margin: 0;
+}
+
+.data-table td button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #c8d8ce;
+  border-radius: 7px;
+  color: #214b3d;
+  background: #f4f8f5;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.data-table td button:hover {
+  background: #e4eee7;
+}
+
+.data-table .status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid #d5e2d9;
+  border-radius: 6px;
+  background: #f0f6f1;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .panel:has(.data-table) {
+    padding: 18px 14px;
+    border-radius: 16px;
+  }
+
+  .data-table {
+    min-width: 800px;
+    font-size: .84rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 11px;
+  }
+}
