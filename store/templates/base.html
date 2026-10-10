@@ -16,7 +16,7 @@
       </a>
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('catalog') }}">Shop</a>
+        <a href="{{ url_for('auth.customer_login') }}">Customer Sign In</a>
         {% set cart_count = session.get("cart", {}).values() | sum %}
         <a class="nav-cart" href="{{ url_for('cart') }}">Cart{% if cart_count %}<span class="nav-cart-count">{{ cart_count }}</span>{% endif %}</a>
         <a href="{{ url_for('auth.login') }}">Admin</a>
@@ -38,7 +38,7 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a>
-        <div class="footer-links"><span>Customer Sign In</span><a href="{{ url_for('auth.login') }}">Staff Sign In</a></div>
+        <div class="footer-links"><a href="{{ url_for('auth.staff_login') }}">Staff Sign In</a></div>
         <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
       </div>
     </footer>
