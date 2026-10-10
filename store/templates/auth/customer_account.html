@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}My Customer Account | Kora Market{% endblock %}
+{% block content %}
+<section class="panel customer-account-panel">
+  <div class="panel-header">
+    <div>
+      <p class="eyebrow">Customer account</p>
+      <h1>Welcome, {{ customer.full_name }}</h1>
+      <p class="muted">Your account details and orders are shown below.</p>
+    </div>
+    <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
+  </div>
+  <div class="dashboard-grid customer-account-details">
+    <div class="info-tile"><span>Email</span><strong class="customer-detail-value">{{ customer.email }}</strong></div>
+    <div class="info-tile"><span>Phone</span><strong class="customer-detail-value">{{ customer.phone_number }}</strong></div>
+    <div class="info-tile"><span>Total orders</span><strong>{{ orders|length }}</strong></div>
+  </div>
+  <div class="admin-section-heading"><div><p class="eyebrow">Purchase history</p><h2>My orders</h2></div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Order number</th><th>Items</th><th>Total</th><th>Payment</th><th>Pickup</th><th>Date</th><th>Details</th></tr></thead>
+      <tbody>
+      {% for order in orders %}
+        <tr>
+          <td>{{ order.order_number }}</td>
+          <td>{% for item in order.items %}<div>{{ item.product_name }} × {{ item.quantity }}</div>{% endfor %}</td>
+          <td>{{ order.currency }} {{ "%.2f"|format(order.total) }}</td>
+          <td>{{ order.payment_status|replace("_", " ")|title }}</td>
+          <td>{{ order.collection_status|replace("_", " ")|title }}</td>
+          <td>{{ order.created_at.strftime("%d %b %Y") if order.created_at else "—" }}</td>
+          <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">View order</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty-state">You have not placed any orders through this account yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="dashboard-footer">
+    <span>Signed in as {{ customer.email }}</span>
+    <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
+  </div>
+</section>
+{% endblock %}
