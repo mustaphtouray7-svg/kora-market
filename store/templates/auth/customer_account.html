@@ -11,7 +11,6 @@
     <a class="button button-secondary" href="{{ url_for('catalog') }}">Continue shopping</a>
   </div>
   <div class="dashboard-grid customer-account-details">
-    <div class="info-tile"><span>Email</span><strong class="customer-detail-value">{{ customer.email }}</strong></div>
     <div class="info-tile"><span>Phone</span><strong class="customer-detail-value">{{ customer.phone_number }}</strong></div>
     <div class="info-tile"><span>Address</span><strong class="customer-detail-value">{{ customer.address or "Not provided" }}</strong></div>
     <div class="info-tile"><span>Total orders</span><strong>{{ orders|length }}</strong></div>
@@ -38,7 +37,7 @@
     </table>
   </div>
   <div class="dashboard-footer">
-    <span>Signed in as {{ customer.email }}</span>
+    <span>Signed in with phone number {{ customer.phone_number }}</span>
     <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
   </div>
 </section>
