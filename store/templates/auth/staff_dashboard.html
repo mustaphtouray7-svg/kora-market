@@ -23,54 +23,6 @@
     </a>
   </div>
 
-  <section class="admin-section staff-activity-section">
-    <div class="admin-section-heading">
-      <div><p class="eyebrow">Latest customer activity</p><h2>Customers and recent purchases</h2></div>
-      <a class="button button-secondary" href="{{ url_for('auth.orders') }}">View all orders</a>
-    </div>
-    <p class="muted">The latest 15 orders are shown below, with customer details, purchased items, payment and collection status.</p>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Order</th>
-            <th>Activity / items purchased</th>
-            <th>Total</th>
-            <th>Payment</th>
-            <th>Pickup</th>
-            <th>Date</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for order in recent_orders %}
-          <tr>
-            <td>{{ order.customer.full_name }}</td>
-            <td>{{ order.customer.phone_number }}</td>
-            <td>{{ order.order_number }}</td>
-            <td>
-              {% for item in order.items %}
-                <div>{{ item.product_name }} × {{ item.quantity }}</div>
-              {% else %}
-                <span class="muted">No item details</span>
-              {% endfor %}
-            </td>
-            <td>{{ order.currency }} {{ "%.2f"|format(order.total) }}</td>
-            <td><span class="status-pill">{{ order.payment_status|replace("_", " ")|title }}</span></td>
-            <td>{{ order.collection_status|replace("_", " ")|title }}</td>
-            <td>{{ order.created_at.strftime("%d %b %Y, %H:%M") if order.created_at else "—" }}</td>
-            <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">Open order</a></td>
-          </tr>
-          {% else %}
-          <tr><td colspan="9" class="empty-state">No customer orders have been recorded yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
-
   <div class="admin-section-heading">
     <div><p class="eyebrow">Your work tools</p><h2>Customer service</h2></div>
     <p>You have access to customer and order information only.</p>
