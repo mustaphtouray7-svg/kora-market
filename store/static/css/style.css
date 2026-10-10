@@ -961,3 +961,29 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 .payment-option { min-height: 84px; }
 .payment-logo-image { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; padding: 5px; flex: 0 0 60px; overflow: hidden; border: 1px solid #e1e8e3; border-radius: 12px; background: #fff; }
 .payment-logo-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+
+/* Yonna manual QR payment */
+.yonna-payment-instructions {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+.yonna-payment-instructions h2 { margin: 0; color: var(--green); }
+.yonna-payment-instructions p { max-width: 560px; margin: 0; line-height: 1.65; }
+.yonna-payment-qr {
+  display: block;
+  width: min(100%, 340px);
+  height: auto;
+  image-rendering: pixelated;
+  border: 8px solid #fff;
+  border-radius: 10px;
+  background: #fff;
+}
+.yonna-payment-amount { font-size: 1.08rem; }
