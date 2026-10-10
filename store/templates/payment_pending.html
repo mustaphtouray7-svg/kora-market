@@ -19,11 +19,8 @@
   {% elif provider_name|lower == "yonna" %}
     <div class="yonna-payment-instructions">
       <h2>Complete your Yonna payment</h2>
-      <p>Open Yonna Wallet on your phone and scan the business QR code below. Check that the recipient details match the Kora Market business account before sending.</p>
-      <img class="yonna-payment-qr" src="{{ url_for('static', filename='img/yonna-business-qr.png') }}" alt="Kora Market Yonna business payment QR code">
-      <p class="yonna-payment-amount">Pay exactly <strong>{{ "%.2f" | format(order.total) }} GMD</strong>.</p>
-      <p>After paying, keep your transaction confirmation. Your order will remain <strong>unpaid</strong> until the store verifies that the money has arrived.</p>
-      <p class="muted">If the QR code does not appear or the recipient details do not match, do not send money. Contact the store for help.</p>
+      <p>Continue to Yonna Wallet to authorize this payment. Your order total is <strong>{{ "%.2f" | format(order.total) }} GMD</strong>.</p>
+      <p>Direct payment confirmation requires a Yonna-supported payment link or merchant integration. Your order will remain <strong>unpaid</strong> until the payment provider confirms the transaction.</p>
     </div>
     <div class="flash flash-info">Order created. Payment has not been verified yet.</div>
   {% else %}
