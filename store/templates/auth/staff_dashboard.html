@@ -18,7 +18,7 @@
     <a class="info-tile" href="{{ url_for('auth.customers') }}">
       <span class="metric-label">Customers</span><strong>{{ customer_count }}</strong><span class="tile-link">Search customers →</span>
     </a>
-    <a class="info-tile pending-tile" href="{{ url_for('auth.orders', q='pending') }}">
+    <a class="info-tile pending-tile" href="{{ url_for('auth.orders') }}">
       <span class="metric-label">Payments pending</span><strong>{{ pending_order_count }}</strong><span class="tile-link">Review payment status →</span>
     </a>
   </div>
