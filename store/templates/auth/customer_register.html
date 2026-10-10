@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Create Customer Account | Kora Market{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <p class="eyebrow">Join Kora Market</p>
+  <h1>Create your account</h1>
+  <p class="muted">Save your customer details and review your orders in one place.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="field">
+      {{ form.full_name.label }}
+      {{ form.full_name(autocomplete="name", placeholder="Your full name") }}
+      {% for error in form.full_name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.phone_number.label }}
+      {{ form.phone_number(type="tel", autocomplete="tel", placeholder="Your contact number") }}
+      {% for error in form.phone_number.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.email.label }}
+      {{ form.email(type="email", autocomplete="email", autocapitalize="none", placeholder="you@example.com") }}
+      {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.password.label }}
+      {{ form.password(autocomplete="new-password") }}
+      {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    <div class="field">
+      {{ form.confirm_password.label }}
+      {{ form.confirm_password(autocomplete="new-password") }}
+      {% for error in form.confirm_password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
+    {{ form.submit(class_="button button-full") }}
+  </form>
+  <p class="customer-auth-switch">Already have an account? <a href="{{ url_for('auth.customer_login') }}">Customer sign in</a></p>
+</section>
+{% endblock %}
