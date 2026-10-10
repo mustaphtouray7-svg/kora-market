@@ -7,10 +7,10 @@ from flask_wtf import FlaskForm
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional
 
 from store.extensions import db
-from store.models import AdminUser, Branch, Customer, Order, OrderItem, Product
+from store.models import AdminUser, StaffUser, Branch, Customer, Order, OrderItem, Product
 
 auth = Blueprint("auth", __name__)
 
@@ -42,6 +42,19 @@ class LoginForm(FlaskForm):
     )
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Sign in")
+
+
+class StaffLoginForm(FlaskForm):
+    email = StringField("Gmail address", validators=[DataRequired(), Email(), Length(max=254)])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Sign in as staff")
+
+
+class StaffAccountForm(FlaskForm):
+    email = StringField("Staff Gmail address", validators=[DataRequired(), Email(), Length(max=254)])
+    password = PasswordField("Temporary password (at least 12 characters)", validators=[DataRequired(), Length(min=12, max=128)])
+    confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
+    submit = SubmitField("Create staff account")
 
 
 class BranchForm(FlaskForm):
@@ -81,6 +94,65 @@ def login():
         flash("The Gmail address or password is incorrect.", "error")
 
     return render_template("auth/login.html", form=form)
+
+
+@auth.route("/staff/login", methods=["GET", "POST"])
+def staff_login():
+    if current_user.is_authenticated:
+        return redirect(url_for("auth.dashboard"))
+    form = StaffLoginForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        staff = StaffUser.query.filter_by(email=email).first()
+        if staff is not None and staff.is_active and staff.check_password(form.password.data):
+            login_user(staff)
+            flash("You are signed in as staff.", "success")
+            return redirect(url_for("auth.dashboard"))
+        flash("The Gmail address or password is incorrect.", "error")
+    return render_template("auth/staff_login.html", form=form)
+
+
+@auth.get("/admin/staff")
+@login_required
+@admin_required
+def staff_accounts():
+    staff_list = StaffUser.query.order_by(StaffUser.created_at.desc()).all()
+    return render_template("auth/staff_accounts.html", staff_list=staff_list)
+
+
+@auth.route("/admin/staff/new", methods=["GET", "POST"])
+@login_required
+@admin_required
+def new_staff_account():
+    form = StaffAccountForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        if StaffUser.query.filter_by(email=email).first():
+            flash("A staff account with that email already exists.", "error")
+            return render_template("auth/staff_form.html", form=form)
+        staff = StaffUser(email=email)
+        staff.set_password(form.password.data)
+        db.session.add(staff)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("A staff account with that email already exists.", "error")
+            return render_template("auth/staff_form.html", form=form)
+        flash("Staff account created. Give the staff member their temporary password securely.", "success")
+        return redirect(url_for("auth.staff_accounts"))
+    return render_template("auth/staff_form.html", form=form)
+
+
+@auth.post("/admin/staff/<int:staff_id>/toggle")
+@login_required
+@admin_required
+def toggle_staff_account(staff_id):
+    staff = StaffUser.query.get_or_404(staff_id)
+    staff.is_active = not staff.is_active
+    db.session.commit()
+    flash(f"Staff account {staff.email} is now {'active' if staff.is_active else 'disabled'}.", "success")
+    return redirect(url_for("auth.staff_accounts"))
 
 
 @auth.get("/admin")
@@ -327,6 +399,7 @@ def toggle_branch(branch_id):
 @auth.post("/admin/logout")
 @login_required
 def logout():
+    was_admin = getattr(current_user, "is_admin", False)
     logout_user()
     flash("You have signed out.", "success")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("auth.login" if was_admin else "auth.staff_login"))
