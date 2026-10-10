@@ -23,7 +23,7 @@
       <h2>3. Payment method</h2>
       <p class="muted checkout-note">Only Wave, APS, and Yonna are available.</p>
       <div class="payment-methods">
-        <label class="payment-option"><input type="radio" name="provider" value="wave" required><span class="payment-logo payment-logo-image wave-mark"><img src="https://www.wave.com/favicon.ico" alt="Official Wave logo" width="48" height="48" loading="lazy"></span><span><strong>Wave</strong><small>Pay with Wave</small></span></label>
+        <label class="payment-option"><input type="radio" name="provider" value="wave" required><span class="payment-logo payment-logo-image wave-mark"><img src="https://www.wave.com/favicon.ico" alt="" width="48" height="48" loading="lazy" onerror="this.remove(); this.parentElement.textContent='W'; this.parentElement.setAttribute('aria-label','Wave');"></span><span><strong>Wave</strong><small>Pay with Wave</small></span></label>
         <label class="payment-option"><input type="radio" name="provider" value="aps"><span class="payment-logo payment-logo-image aps-mark"><img src="https://play-lh.googleusercontent.com/Ap_G8y-IRjrkAMzJdiBNKuGGAJuZJ7zL4kbQcI5fA6Lah5WNWhBLz-rdf_xAfqazJkzZJzIacDPEoPtlWEAaJXk%3Dw240-h480" alt="APS Wallet official app logo" width="48" height="48" loading="lazy"></span><span><strong>APS</strong><small>Pay with APS Wallet</small></span></label>
         <label class="payment-option"><input type="radio" name="provider" value="yonna"><span class="payment-logo payment-logo-image yonna-mark"><img src="https://wallet.yonnaforex.co.uk/images/yonna-logo.png" alt="Official Yonna Wallet logo" width="48" height="48" loading="lazy"></span><span><strong>Yonna</strong><small>Pay with Yonna Wallet</small></span></label>
       </div>
