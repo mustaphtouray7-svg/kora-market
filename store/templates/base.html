@@ -20,6 +20,7 @@
         {% set cart_count = session.get("cart", {}).values() | sum %}
         <a class="nav-cart" href="{{ url_for('cart') }}">Cart{% if cart_count %}<span class="nav-cart-count">{{ cart_count }}</span>{% endif %}</a>
         <a href="{{ url_for('auth.login') }}">Admin</a>
+        <a href="{{ url_for('auth.staff_login') }}">Staff</a>
       </nav>
     </header>
     <main class="page">
