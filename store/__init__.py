@@ -270,6 +270,19 @@ def create_app(test_config=None):
         return redirect(launch_url)
 
 
+    def _ensure_receipt(order):
+        """Create one receipt only after the payment provider confirms payment."""
+        if order.receipt is not None:
+            return order.receipt
+        receipt = models.Receipt(
+            order=order,
+            receipt_number=f"REC-{order.order_number}",
+            verification_code=secrets.token_hex(16),
+        )
+        db.session.add(receipt)
+        return receipt
+
+
     @app.get("/payment/wave/success/<int:order_id>")
     def wave_payment_success(order_id):
         order=models.Order.query.get_or_404(order_id); api_key=app.config.get("WAVE_API_KEY")
@@ -283,6 +296,7 @@ def create_app(test_config=None):
                 order.payment_status="paid"; order.status="confirmed"
                 if order.payments:
                     order.payments[-1].status="paid"; order.payments[-1].provider_reference=result.get("id")
+                _ensure_receipt(order)
                 db.session.commit()
                 return render_template("payment_pending.html",order=order,payment=order.payments[-1] if order.payments else None,provider_name="Wave",paid=True)
         except Exception:
@@ -314,6 +328,7 @@ def create_app(test_config=None):
         if status=="done" or payload.get("sep31_status")=="completed":
             order.payment_status="paid"; order.status="confirmed"
             if order.payments: order.payments[-1].status="paid"; order.payments[-1].provider_reference=payload.get("transaction_id") or order.payments[-1].provider_reference
+            _ensure_receipt(order)
         elif status in {"canceled","expired","refunded"} or payload.get("sep31_status")=="error":
             if order.payments: order.payments[-1].status="failed"
         db.session.commit(); return {"status":"ok"}
