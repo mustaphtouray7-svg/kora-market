@@ -200,6 +200,25 @@ def order_detail(order_id):
     order = Order.query.get_or_404(order_id)
     return render_template("auth/order_detail.html", order=order)
 
+@auth.post("/admin/orders/<int:order_id>/collection-status")
+@login_required
+def update_collection_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    new_status = (request.form.get("collection_status") or "").strip().lower()
+    if new_status not in {"collected", "not_collected"}:
+        abort(400)
+    if new_status == "collected" and order.payment_status != "paid":
+        flash("This order cannot be marked collected until its payment is confirmed.", "error")
+        return redirect(url_for("auth.order_detail", order_id=order.id))
+    order.collection_status = new_status
+    db.session.commit()
+    flash(
+        "Order marked as collected." if new_status == "collected" else "Order marked as not collected.",
+        "success",
+    )
+    return redirect(url_for("auth.order_detail", order_id=order.id))
+
+
 @auth.get("/admin/customers")
 @login_required
 def customers():
