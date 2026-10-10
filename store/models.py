@@ -65,14 +65,33 @@ class Branch(db.Model):
     orders = db.relationship("Order", back_populates="branch")
 
 
-class Customer(db.Model):
+class Customer(UserMixin, db.Model):
     __tablename__ = "customers"
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(160), nullable=False)
     phone_number = db.Column(db.String(32), nullable=False, index=True)
+    email = db.Column(db.String(254), unique=True, index=True, nullable=True)
+    password_hash = db.Column(db.String(256), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     orders = db.relationship("Order", back_populates="customer")
+
+    @property
+    def is_admin(self):
+        return False
+
+    @property
+    def is_customer(self):
+        return True
+
+    def get_id(self):
+        return f"customer:{self.id}"
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return bool(self.password_hash) and check_password_hash(self.password_hash, password)
 
 
 class Product(db.Model):
@@ -171,6 +190,12 @@ class Receipt(db.Model):
 
 @login_manager.user_loader
 def load_admin_user(user_id):
+    if user_id.startswith("customer:"):
+        customer_id = user_id.split(":", 1)[1]
+        if not customer_id.isdecimal():
+            return None
+        customer = db.session.get(Customer, int(customer_id))
+        return customer if customer is not None and customer.password_hash else None
     if user_id.startswith("staff:"):
         staff_id = user_id.split(":", 1)[1]
         if not staff_id.isdecimal():
