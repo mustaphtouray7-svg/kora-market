@@ -44,6 +44,21 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Sign in")
 
 
+class CustomerRegistrationForm(FlaskForm):
+    full_name = StringField("Full name", validators=[DataRequired(), Length(min=2, max=160)])
+    phone_number = StringField("Phone number", validators=[DataRequired(), Length(min=6, max=32)])
+    email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
+    password = PasswordField("Password (at least 8 characters)", validators=[DataRequired(), Length(min=8, max=128)])
+    confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
+    submit = SubmitField("Create customer account")
+
+
+class CustomerLoginForm(FlaskForm):
+    email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Customer sign in")
+
+
 class StaffLoginForm(FlaskForm):
     email = StringField("Gmail address", validators=[DataRequired(), Email(), Length(max=254)])
     password = PasswordField("Password", validators=[DataRequired()])
@@ -80,7 +95,7 @@ class ProductForm(FlaskForm):
 
 @auth.route("/admin/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and getattr(current_user, "is_admin", False):
         return redirect(url_for("auth.dashboard"))
 
     form = LoginForm()
@@ -98,9 +113,8 @@ def login():
 
 @auth.route("/staff/login", methods=["GET", "POST"])
 def staff_login():
-    # A shared browser session may already be signed in as the administrator.
-    # Let them open the staff sign-in page so they can switch accounts.
-    if current_user.is_authenticated and not getattr(current_user, "is_admin", False):
+    # Allow customers and administrators to switch to a staff account.
+    if current_user.is_authenticated and not getattr(current_user, "is_admin", False) and not getattr(current_user, "is_customer", False):
         return redirect(url_for("auth.dashboard"))
     form = StaffLoginForm()
     if form.validate_on_submit():
@@ -112,6 +126,62 @@ def staff_login():
             return redirect(url_for("auth.dashboard"))
         flash("The Gmail address or password is incorrect.", "error")
     return render_template("auth/staff_login.html", form=form)
+
+
+
+
+@auth.route("/customer/register", methods=["GET", "POST"])
+def customer_register():
+    if current_user.is_authenticated and getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.customer_account"))
+    form = CustomerRegistrationForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        if Customer.query.filter_by(email=email).first():
+            flash("An account with that email already exists. Please sign in instead.", "error")
+            return render_template("auth/customer_register.html", form=form)
+        customer = Customer(
+            full_name=form.full_name.data.strip(),
+            phone_number=form.phone_number.data.strip(),
+            email=email,
+        )
+        customer.set_password(form.password.data)
+        db.session.add(customer)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("An account with that email already exists. Please sign in instead.", "error")
+            return render_template("auth/customer_register.html", form=form)
+        login_user(customer)
+        flash("Your customer account has been created.", "success")
+        return redirect(url_for("auth.customer_account"))
+    return render_template("auth/customer_register.html", form=form)
+
+
+@auth.route("/customer/sign-in", methods=["GET", "POST"])
+def customer_login():
+    if current_user.is_authenticated and getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.customer_account"))
+    form = CustomerLoginForm()
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        customer = Customer.query.filter_by(email=email).first()
+        if customer is not None and customer.check_password(form.password.data):
+            login_user(customer)
+            flash("You are signed in to your customer account.", "success")
+            return redirect(url_for("auth.customer_account"))
+        flash("The email address or password is incorrect.", "error")
+    return render_template("auth/customer_login.html", form=form)
+
+
+@auth.get("/customer/account")
+@login_required
+def customer_account():
+    if not getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.dashboard"))
+    customer_orders = Order.query.filter_by(customer_id=current_user.id).order_by(Order.created_at.desc()).all()
+    return render_template("auth/customer_account.html", customer=current_user, orders=customer_orders)
 
 
 @auth.get("/admin/staff")
@@ -160,6 +230,8 @@ def toggle_staff_account(staff_id):
 @auth.get("/admin")
 @login_required
 def dashboard():
+    if getattr(current_user, "is_customer", False):
+        return redirect(url_for("auth.customer_account"))
     product_count = Product.query.count()
     branch_count = Branch.query.count()
     order_count = Order.query.count()
@@ -437,6 +509,8 @@ def toggle_branch(branch_id):
 @login_required
 def logout():
     was_admin = getattr(current_user, "is_admin", False)
+    was_customer = getattr(current_user, "is_customer", False)
     logout_user()
     flash("You have signed out.", "success")
-    return redirect(url_for("auth.login" if was_admin else "auth.staff_login"))
+    endpoint = "auth.login" if was_admin else ("auth.customer_login" if was_customer else "auth.staff_login")
+    return redirect(url_for(endpoint))
