@@ -26,9 +26,9 @@
     <main class="page">
       {% if request.endpoint != 'index' %}
         <div class="page-navigation">
-          {% if current_user.is_authenticated and not getattr(current_user, 'is_customer', false) and request.endpoint not in ['auth.dashboard', 'auth.login', 'auth.staff_login', 'auth.logout'] %}
+          {% if current_user.is_authenticated and not current_user.is_customer and request.endpoint not in ['auth.dashboard', 'auth.login', 'auth.staff_login', 'auth.logout'] %}
             <a class="back-button" href="{{ url_for('auth.dashboard') }}">← Back to Dashboard</a>
-          {% elif current_user.is_authenticated and getattr(current_user, 'is_customer', false) and request.endpoint != 'auth.customer_account' %}
+          {% elif current_user.is_authenticated and current_user.is_customer and request.endpoint != 'auth.customer_account' %}
             <a class="back-button" href="{{ url_for('auth.customer_account') }}">← Back to My Account</a>
           {% elif request.endpoint == 'auth.customer_account' %}
             <a class="back-button" href="{{ url_for('index') }}">← Back to Shop</a>
