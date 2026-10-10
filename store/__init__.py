@@ -10,7 +10,8 @@ from decimal import Decimal
 from pathlib import Path
 
 import click
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, current_app, flash, redirect, render_template, request, session, url_for
+from flask_login import current_user
 from sqlalchemy import inspect, or_, text
 from werkzeug.exceptions import NotFound
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -176,7 +177,7 @@ def create_app(test_config=None):
             return redirect(url_for("catalog"))
         branches = models.Branch.query.filter_by(is_active=True).order_by(models.Branch.name.asc()).all()
         total = sum((item["line_total"] for item in items), Decimal("0.00"))
-        return render_template("checkout.html", items=items, total=total, branches=branches)
+        return render_template("checkout.html", items=items, total=total, branches=branches, customer_account=current_user if getattr(current_user, "is_customer", False) else None)
 
 
     def _json_request(url, payload, headers, method="POST"):
@@ -263,8 +264,14 @@ def create_app(test_config=None):
                 flash(f"Only {item['product'].stock_quantity} unit(s) of {item['product'].name} are currently available.", "error")
                 return redirect(url_for("cart"))
         branch = models.Branch.query.filter_by(id=branch_id,is_active=True).first() if branch_id else None
-        customer = models.Customer(full_name=full_name,phone_number=phone_number)
-        db.session.add(customer); db.session.flush()
+        if getattr(current_user, "is_customer", False):
+            customer = current_user
+            customer.full_name = full_name
+            customer.phone_number = phone_number
+        else:
+            customer = models.Customer(full_name=full_name, phone_number=phone_number)
+            db.session.add(customer)
+        db.session.flush()
         order_number = f"KORA-{datetime.utcnow().strftime('%Y%m%d')}-{(db.session.query(models.Order.id).count()+1):04d}"
         order = models.Order(order_number=order_number,customer=customer,branch=branch,status="pending",payment_status="pending",currency="GMD",total=Decimal("0.00"))
         db.session.add(order); db.session.flush()
