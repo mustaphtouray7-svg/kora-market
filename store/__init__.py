@@ -53,6 +53,18 @@ def create_app(test_config=None):
     with app.app_context():
         db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__])
         inspector = inspect(db.engine)
+        # Add nullable customer-account fields to existing customer records.
+        # Existing guest checkouts remain valid and can continue without an account.
+        if inspector.has_table("customers"):
+            customer_columns = {column["name"] for column in inspector.get_columns("customers")}
+            with db.engine.begin() as connection:
+                if "email" not in customer_columns:
+                    connection.execute(text("ALTER TABLE customers ADD COLUMN email VARCHAR(254)"))
+                if "password_hash" not in customer_columns:
+                    connection.execute(text("ALTER TABLE customers ADD COLUMN password_hash VARCHAR(256)"))
+                connection.execute(text(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ix_customers_email ON customers (email)"
+                ))
         if inspector.has_table("orders"):
             order_columns = {column["name"] for column in inspector.get_columns("orders")}
             if "collection_status" not in order_columns:
