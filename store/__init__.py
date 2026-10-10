@@ -11,7 +11,7 @@ from pathlib import Path
 
 import click
 from flask import Flask, flash, redirect, render_template, request, session, url_for
-from sqlalchemy import or_
+from sqlalchemy import inspect, or_, text
 from werkzeug.exceptions import NotFound
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -48,9 +48,17 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth)
 
-    # Create only the new staff table without altering existing production tables.
+    # Create the staff table and safely add the pickup-status column to existing orders.
+    # Inspection keeps this migration compatible with both PostgreSQL and SQLite.
     with app.app_context():
         db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__])
+        order_columns = {column["name"] for column in inspect(db.engine).get_columns("orders")}
+        if "collection_status" not in order_columns:
+            with db.engine.begin() as connection:
+                connection.execute(text(
+                    "ALTER TABLE orders ADD COLUMN collection_status VARCHAR(24) "
+                    "NOT NULL DEFAULT 'not_collected'"
+                ))
 
     @app.get("/")
     def index():
