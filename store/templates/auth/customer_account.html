@@ -13,6 +13,7 @@
   <div class="dashboard-grid customer-account-details">
     <div class="info-tile"><span>Email</span><strong class="customer-detail-value">{{ customer.email }}</strong></div>
     <div class="info-tile"><span>Phone</span><strong class="customer-detail-value">{{ customer.phone_number }}</strong></div>
+    <div class="info-tile"><span>Address</span><strong class="customer-detail-value">{{ customer.address or "Not provided" }}</strong></div>
     <div class="info-tile"><span>Total orders</span><strong>{{ orders|length }}</strong></div>
   </div>
   <div class="admin-section-heading"><div><p class="eyebrow">Purchase history</p><h2>My orders</h2></div></div>
