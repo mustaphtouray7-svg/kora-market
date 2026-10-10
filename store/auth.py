@@ -47,6 +47,7 @@ class LoginForm(FlaskForm):
 class CustomerRegistrationForm(FlaskForm):
     full_name = StringField("Full name", validators=[DataRequired(), Length(min=2, max=160)])
     phone_number = StringField("Phone number", validators=[DataRequired(), Length(min=6, max=32)])
+    address = StringField("Home address", validators=[DataRequired(), Length(min=5, max=300)])
     email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
     password = PasswordField("Password (at least 8 characters)", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
@@ -143,6 +144,7 @@ def customer_register():
         customer = Customer(
             full_name=form.full_name.data.strip(),
             phone_number=form.phone_number.data.strip(),
+            address=form.address.data.strip(),
             email=email,
         )
         customer.set_password(form.password.data)
