@@ -8,10 +8,26 @@
   </div>
   <div class="dashboard-grid">
     <div class="info-tile"><span>Customer</span><strong>{{ order.customer.full_name }}</strong><span>{{ order.customer.phone_number }}</span></div>
-    <div class="info-tile"><span>Payment status</span><strong>{{ order.payment_status|title }}</strong></div>
+    <div class="info-tile"><span>Payment status</span><strong>{{ order.payment_status|title }}</strong>
+      {% if order.payments %}<span>Payment method: {{ order.payments[-1].provider }}</span><span>Payment phone: {{ order.payments[-1].payer_phone_number }}</span>{% endif %}
+    </div>
     <div class="info-tile"><span>Order status</span><strong>{{ order.status|replace('_',' ')|title }}</strong></div>
-    <div class="info-tile"><span>Branch</span><strong>{{ order.branch.name if order.branch else 'Not selected' }}</strong></div>
+    <div class="info-tile"><span>Pickup status</span><strong>{{ order.collection_status|replace('_',' ')|title }}</strong><span>Branch: {{ order.branch.name if order.branch else 'Not selected' }}</span></div>
   </div>
+  <h2>Branch collection</h2>
+  <p class="muted">Staff should mark an order as collected only after the customer has received all items listed on the receipt.</p>
+  <form method="post" action="{{ url_for('auth.update_collection_status', order_id=order.id) }}" class="search-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="collection-status">Collection status</label>
+    <div class="search-controls">
+      <select id="collection-status" name="collection_status">
+        <option value="not_collected" {% if order.collection_status == 'not_collected' %}selected{% endif %}>Not collected</option>
+        <option value="collected" {% if order.collection_status == 'collected' %}selected{% endif %} {% if order.payment_status != 'paid' %}disabled{% endif %}>Collected</option>
+      </select>
+      <button class="button" type="submit">Save collection status</button>
+    </div>
+    {% if order.payment_status != 'paid' %}<p class="muted">Collection can only be confirmed after payment is verified.</p>{% endif %}
+  </form>
   <h2>Purchased items</h2>
   <div class="table-wrap">
     <table class="data-table">
