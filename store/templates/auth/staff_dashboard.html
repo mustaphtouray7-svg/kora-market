@@ -23,30 +23,53 @@
     </a>
   </div>
 
-  <div class="admin-section-heading">
-    <div><p class="eyebrow">Your work tools</p><h2>Customer service</h2></div>
-    <p>You have access to customer and order information only.</p>
-  </div>
-  <div class="admin-actions">
-    <a class="admin-action-card" href="{{ url_for('auth.customers') }}">
-      <span class="action-kicker">01 / CUSTOMER LOOKUP</span>
-      <h3>Find a customer</h3>
-      <p>Search by the customer's name or phone number and open their related orders.</p>
-      <span class="action-arrow">Search customers →</span>
-    </a>
-    <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
-      <span class="action-kicker">02 / ORDER LOOKUP</span>
-      <h3>Orders and purchases</h3>
-      <p>Find orders by order number, customer name or phone number. Review purchased items and totals.</p>
-      <span class="action-arrow">Search orders →</span>
-    </a>
-    <a class="admin-action-card" href="{{ url_for('auth.orders') }}">
-      <span class="action-kicker">03 / RECEIPTS & PAYMENTS</span>
-      <h3>Payment and receipt details</h3>
-      <p>Open an order to check its payment status and view its receipt when one has been issued.</p>
-      <span class="action-arrow">View order details →</span>
-    </a>
-  </div>
+  <section class="admin-section staff-activity-section">
+    <div class="admin-section-heading">
+      <div><p class="eyebrow">Customer Recent Activities</p><h2>Customers and recent purchases</h2></div>
+      <a class="button button-secondary" href="{{ url_for('auth.orders') }}">View all orders</a>
+    </div>
+    <p class="muted">The latest 15 orders are shown below, with customer details, purchased items, payment and collection status.</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Order</th>
+            <th>Activity / items purchased</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Pickup</th>
+            <th>Date</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in recent_orders %}
+          <tr>
+            <td>{{ order.customer.full_name }}</td>
+            <td>{{ order.customer.phone_number }}</td>
+            <td>{{ order.order_number }}</td>
+            <td>
+              {% for item in order.items %}
+                <div>{{ item.product_name }} × {{ item.quantity }}</div>
+              {% else %}
+                <span class="muted">No item details</span>
+              {% endfor %}
+            </td>
+            <td>{{ order.currency }} {{ "%.2f"|format(order.total) }}</td>
+            <td><span class="status-pill">{{ order.payment_status|replace("_", " ")|title }}</span></td>
+            <td>{{ order.collection_status|replace("_", " ")|title }}</td>
+            <td>{{ order.created_at.strftime("%d %b %Y, %H:%M") if order.created_at else "—" }}</td>
+            <td><a href="{{ url_for('auth.order_detail', order_id=order.id) }}">Open order</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="empty-state">No customer orders have been recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <div class="dashboard-footer">
     <span>Signed in with staff access. Product, branch and staff-account management are restricted.</span>
