@@ -48,6 +48,10 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth)
 
+    # Create only the new staff table without altering existing production tables.
+    with app.app_context():
+        db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__])
+
     @app.get("/")
     def index():
         products = (
