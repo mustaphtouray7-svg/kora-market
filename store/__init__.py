@@ -52,13 +52,15 @@ def create_app(test_config=None):
     # Inspection keeps this migration compatible with both PostgreSQL and SQLite.
     with app.app_context():
         db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__])
-        order_columns = {column["name"] for column in inspect(db.engine).get_columns("orders")}
-        if "collection_status" not in order_columns:
-            with db.engine.begin() as connection:
-                connection.execute(text(
-                    "ALTER TABLE orders ADD COLUMN collection_status VARCHAR(24) "
-                    "NOT NULL DEFAULT 'not_collected'"
-                ))
+        inspector = inspect(db.engine)
+        if inspector.has_table("orders"):
+            order_columns = {column["name"] for column in inspector.get_columns("orders")}
+            if "collection_status" not in order_columns:
+                with db.engine.begin() as connection:
+                    connection.execute(text(
+                        "ALTER TABLE orders ADD COLUMN collection_status VARCHAR(24) "
+                        "NOT NULL DEFAULT 'not_collected'"
+                    ))
 
     @app.get("/")
     def index():
