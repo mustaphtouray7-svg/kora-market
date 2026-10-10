@@ -166,11 +166,18 @@ def dashboard():
     customer_count = Customer.query.count()
     pending_order_count = Order.query.filter_by(payment_status="pending").count()
     if not getattr(current_user, "is_admin", False):
+        recent_orders = (
+            Order.query.join(Customer)
+            .order_by(Order.created_at.desc())
+            .limit(15)
+            .all()
+        )
         return render_template(
             "auth/staff_dashboard.html",
             order_count=order_count,
             customer_count=customer_count,
             pending_order_count=pending_order_count,
+            recent_orders=recent_orders,
         )
     return render_template(
         "auth/dashboard.html",
