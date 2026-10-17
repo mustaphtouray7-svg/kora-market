@@ -19,6 +19,30 @@
 
   <section class="home-shop-section">
     <div class="home-section-heading">
+      <div><h2>Shop by store</h2><p>Choose from independent shops on Kora Market.</p></div>
+      <a class="text-link" href="{{ url_for('marketplace.shop_directory') }}">View all shops →</a>
+    </div>
+    {% if approved_shops %}
+      <div class="product-grid preview-grid">
+        {% for shop in approved_shops %}
+          <article class="product-card">
+            <div class="product-placeholder">{{ shop.name[:1] }}</div>
+            <div class="product-copy">
+              <p class="eyebrow">{{ shop.category }}</p>
+              <h2>{{ shop.name }}</h2>
+              <p>{{ shop.description }}</p>
+              <a href="{{ url_for('marketplace.shop_detail', slug=shop.slug) }}">Visit shop →</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="home-empty"><p>New shops will appear here after they are approved.</p><a href="{{ url_for('marketplace.seller_register') }}">Apply to open a shop →</a></div>
+    {% endif %}
+  </section>
+
+  <section class="home-shop-section">
+    <div class="home-section-heading">
       <div><h2>Products</h2></div>
       <a class="text-link" href="{{ url_for('catalog') }}">View all products →</a>
     </div>
