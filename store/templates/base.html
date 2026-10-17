@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#183a35">
-    <meta name="description" content="Browse products, manage your cart and check out with Kora Market.">
-    <title>{% block title %}Kora Market{% endblock %}</title>
+    <meta name="description" content="Browse products, manage your cart and check out with GAM-MARKET 🇬🇲.">
+    <title>{% block title %}GAM-MARKET 🇬🇲{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="{{ url_for('index') }}" aria-label="Kora Market home">
-        <span class="brand-mark" aria-hidden="true">K</span>
-        <span>Kora Market</span>
+      <a class="brand" href="{{ url_for('index') }}" aria-label="GAM-MARKET home">
+        <span class="brand-mark" aria-hidden="true">G</span>
+        <span>GAM-MARKET 🇬🇲</span>
       </a>
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
@@ -50,9 +50,9 @@
     </main>
     <footer class="site-footer">
       <div class="footer-inner">
-        <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>Kora Market</span></a>
+        <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>GAM-MARKET 🇬🇲</span></a>
         <div class="footer-links"><a href="{{ url_for('auth.staff_login') }}">Staff Sign In</a></div>
-        <small>© {{ now().year if now is defined else 2026 }} Kora Market</small>
+        <small>© {{ now().year if now is defined else 2026 }} GAM-MARKET 🇬🇲</small>
       </div>
     </footer>
 
