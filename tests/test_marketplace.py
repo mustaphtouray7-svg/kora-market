@@ -35,7 +35,7 @@ def test_seller_can_apply_but_pending_shop_is_not_public(client, app):
 
 def test_only_admin_can_approve_shop_and_approved_shop_becomes_public(client, app):
     with app.app_context():
-        admin = AdminUser(username="owner")
+        admin = AdminUser(username="owner@example.com")
         admin.set_password("correct horse battery")
         seller = Seller(
             full_name="Musa Store",
@@ -61,7 +61,7 @@ def test_only_admin_can_approve_shop_and_approved_shop_becomes_public(client, ap
 
     login = client.post(
         "/admin/login",
-        data={"username": "owner", "password": "correct horse battery"},
+        data={"username": "owner@example.com", "password": "correct horse battery"},
         follow_redirects=True,
     )
     assert login.status_code == 200
