@@ -15,7 +15,7 @@ from store.extensions import db
 def test_homepage_and_health_endpoint(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert b"Kora Market" in response.data
+    assert "GAM-MARKET".encode() in response.data
     assert client.get("/health").json == {"status": "ok"}
 
 
