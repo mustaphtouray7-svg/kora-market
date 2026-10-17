@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Shops | Kora Market{% endblock %}
+{% block content %}
+<section class="welcome hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Kora Market marketplace</p>
+    <h1>Choose your shop</h1>
+    <p>Explore independent shops in one place. Each shop is reviewed before appearing in this directory.</p>
+    <a class="button" href="{{ url_for('marketplace.seller_register') }}">Open a shop on Kora Market</a>
+  </div>
+</section>
+<section class="home-shop-section">
+  <div class="home-section-heading"><div><h2>Approved shops</h2></div></div>
+  {% if shops %}
+    <div class="product-grid">
+      {% for shop in shops %}
+        <article class="product-card">
+          <div class="product-placeholder">{{ shop.name[:1] }}</div>
+          <div class="product-copy">
+            <p class="eyebrow">{{ shop.category }}</p>
+            <h2>{{ shop.name }}</h2>
+            <p>{{ shop.description }}</p>
+            <a href="{{ url_for('marketplace.shop_detail', slug=shop.slug) }}">Visit shop →</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="home-empty"><p>No shops have been approved yet. Please check again later.</p></div>
+  {% endif %}
+</section>
+{% endblock %}
