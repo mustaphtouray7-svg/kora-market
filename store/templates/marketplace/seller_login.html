@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Seller Sign In | Kora Market{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <p class="eyebrow">Seller access</p>
+  <h1>Sign in to your shop account</h1>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="field">{{ form.email.label }}{{ form.email(type="email", autocomplete="email") }}{% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+    <div class="field">{{ form.password.label }}{{ form.password(autocomplete="current-password") }}{% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+    {{ form.submit(class_="button button-full") }}
+  </form>
+  <p class="customer-auth-switch">New to Kora Market? <a href="{{ url_for('marketplace.seller_register') }}">Apply to open a shop</a></p>
+</section>
+{% endblock %}
