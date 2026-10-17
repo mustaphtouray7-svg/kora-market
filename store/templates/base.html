@@ -16,8 +16,8 @@
       </a>
       <nav aria-label="Main navigation">
         <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('marketplace.shop_directory') }}">Shops</a>
-        <a href="{{ url_for('marketplace.seller_register') }}">Open a Shop</a>
+        <a href="{{ url_for('marketplace.shop_directory') }}">Brands</a>
+        <a href="{{ url_for('marketplace.seller_register') }}">Create a Brand</a>
         <a href="{{ url_for('marketplace.seller_login') }}">Seller Sign In</a>
         <a href="{{ url_for('auth.customer_login') }}">Customer Sign In</a>
         {% set cart_count = session.get("cart", {}).values() | sum %}
@@ -36,7 +36,7 @@
           {% elif current_user.is_authenticated and current_user.is_customer and request.endpoint != 'auth.customer_account' %}
             <a class="back-button" href="{{ url_for('auth.customer_account') }}">← Back to My Account</a>
           {% elif request.endpoint == 'auth.customer_account' %}
-            <a class="back-button" href="{{ url_for('index') }}">← Back to Shop</a>
+            <a class="back-button" href="{{ url_for('index') }}">← Back to Products</a>
           {% else %}
             <a class="back-button" href="{{ url_for('index') }}" onclick="if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return false; }">← Go Back</a>
           {% endif %}
@@ -55,7 +55,7 @@
     </main>
     <footer class="site-footer">
       <div class="footer-inner">
-        <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">K</span><span>GAM-MARKET 🇬🇲</span></a>
+        <a class="footer-brand" href="{{ url_for('index') }}"><span class="brand-mark" aria-hidden="true">G</span><span>GAM-MARKET 🇬🇲</span></a>
         <div class="footer-links"><a href="{{ url_for('auth.staff_login') }}">Staff Sign In</a></div>
         <small>© {{ now().year if now is defined else 2026 }} GAM-MARKET 🇬🇲</small>
       </div>
