@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Seller Sign In | Kora Market{% endblock %}
+{% block title %}Seller Sign In | GAM-MARKET 🇬🇲{% endblock %}
 {% block content %}
 <section class="auth-card">
   <p class="eyebrow">Seller access</p>
@@ -10,6 +10,6 @@
     <div class="field">{{ form.password.label }}{{ form.password(autocomplete="current-password") }}{% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
     {{ form.submit(class_="button button-full") }}
   </form>
-  <p class="customer-auth-switch">New to Kora Market? <a href="{{ url_for('marketplace.seller_register') }}">Apply to open a shop</a></p>
+  <p class="customer-auth-switch">New to GAM-MARKET 🇬🇲? <a href="{{ url_for('marketplace.seller_register') }}">Apply to open a shop</a></p>
 </section>
 {% endblock %}
