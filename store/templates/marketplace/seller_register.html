@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Open a Shop | Kora Market{% endblock %}
+{% block content %}
+<section class="auth-card">
+  <p class="eyebrow">Sell on Kora Market</p>
+  <h1>Apply to open your shop</h1>
+  <p class="muted">Create a seller account and submit your shop for review. Your shop will not appear publicly until an administrator approves it.</p>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {% for field in [form.full_name, form.email, form.phone_number, form.shop_name, form.category, form.description, form.password, form.confirm_password] %}
+      <div class="field">
+        {{ field.label }}
+        {% if field.name == "description" %}
+          {{ field(rows="4", placeholder="What will customers find in your shop?") }}
+        {% elif field.name == "password" or field.name == "confirm_password" %}
+          {{ field(autocomplete="new-password") }}
+        {% elif field.name == "email" %}
+          {{ field(type="email", autocomplete="email") }}
+        {% elif field.name == "phone_number" %}
+          {{ field(type="tel", autocomplete="tel") }}
+        {% else %}
+          {{ field() }}
+        {% endif %}
+        {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      </div>
+    {% endfor %}
+    {{ form.submit(class_="button button-full") }}
+  </form>
+  <p class="customer-auth-switch">Already applied? <a href="{{ url_for('marketplace.seller_login') }}">Seller sign in</a></p>
+</section>
+{% endblock %}
