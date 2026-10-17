@@ -24,6 +24,9 @@
       <span class="metric-label">Customers</span><strong>{{ customer_count }}</strong><span class="tile-link">View customers →</span>
     </a>
     {% if current_user.is_admin %}
+    <a class="info-tile" href="{{ url_for('marketplace.admin_shops') }}">
+      <span class="metric-label">Shop applications</span><strong>Review</strong><span class="tile-link">Approve seller shops →</span>
+    </a>
     <a class="info-tile" href="{{ url_for('auth.branches') }}">
       <span class="metric-label">Branches</span><strong>{{ branch_count }}</strong><span class="tile-link">Manage branches →</span>
     </a>
@@ -50,6 +53,9 @@
       <span class="action-kicker">03 / CUSTOMERS</span><h3>Customer records</h3><p>View the customers who have placed orders through your store.</p><span class="action-arrow">Open customers →</span>
     </a>
     {% if current_user.is_admin %}
+    <a class="admin-action-card" href="{{ url_for('marketplace.admin_shops') }}">
+      <span class="action-kicker">04 / MARKETPLACE</span><h3>Seller shops</h3><p>Review applications and approve, reject or suspend shops.</p><span class="action-arrow">Review shops →</span>
+    </a>
     <a class="admin-action-card" href="{{ url_for('auth.branches') }}">
       <span class="action-kicker">04 / LOCATIONS</span><h3>Store branches</h3><p>Manage the active branches customers can choose at checkout.</p><span class="action-arrow">Open branches →</span>
     </a>

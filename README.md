@@ -1,4 +1,4 @@
-# Kora Market
+# GAM-MARKET 🇬🇲
 
 A Flask-based foundation for a professional, mobile-friendly business store.
 The current build establishes the application, database, staff authentication,

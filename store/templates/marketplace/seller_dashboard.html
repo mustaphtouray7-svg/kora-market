@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Seller Dashboard | GAM-MARKET 🇬🇲{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+  <p class="eyebrow">Seller centre</p>
+  <h1>Welcome, {{ current_user.full_name }}</h1>
+  <p class="dashboard-intro">Track your shop application here. Only approved shops are visible to customers.</p>
+  {% for shop in shops %}
+    <article class="admin-action-card" style="margin: 1rem 0;">
+      <span class="action-kicker">{{ shop.category }}</span>
+      <h2>{{ shop.name }}</h2>
+      <p>{{ shop.description }}</p>
+      <p><strong>Application status:</strong> {{ shop.status|title }}</p>
+      {% if shop.status == "pending" %}<p>Your application is waiting for administrator review.</p>{% elif shop.status == "approved" %}<p>Your shop is now public: <a href="{{ url_for('marketplace.shop_detail', slug=shop.slug) }}">View your shop</a></p>{% elif shop.status == "rejected" %}<p>Your application was not approved. Contact GAM-MARKET 🇬🇲 support if you need clarification.</p>{% elif shop.status == "suspended" %}<p>This shop is currently not visible to customers.</p>{% endif %}
+      {% if shop.admin_note %}<p><strong>Administrator note:</strong> {{ shop.admin_note }}</p>{% endif %}
+    </article>
+  {% else %}
+    <p>You do not have a shop application yet.</p>
+    <a class="button" href="{{ url_for('marketplace.seller_register') }}">Apply to open a shop</a>
+  {% endfor %}
+  <form method="post" action="{{ url_for('marketplace.seller_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button-secondary" type="submit">Sign out</button></form>
+</section>
+{% endblock %}
