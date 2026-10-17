@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ shop.name }} | Kora Market{% endblock %}
+{% block content %}
+<section class="welcome hero">
+  <div class="hero-copy">
+    <p class="eyebrow">{{ shop.category }} · Kora Market shop</p>
+    <h1>{{ shop.name }}</h1>
+    <p>{{ shop.description }}</p>
+    <p><strong>Shop contact:</strong> {{ shop.contact_phone }}</p>
+    <p class="muted">This storefront has been approved by Kora Market. Product listings and seller inventory management are the next implementation phase.</p>
+    <a class="button button-secondary" href="{{ url_for('marketplace.shop_directory') }}">← Browse all shops</a>
+  </div>
+</section>
+{% endblock %}
