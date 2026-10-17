@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Review Shop Applications | GAM-MARKET 🇬🇲{% endblock %}
+{% block title %}Review Brand Applications | GAM-MARKET 🇬🇲{% endblock %}
 {% block content %}
 <section class="admin-dashboard">
   <p class="eyebrow">GAM-MARKET 🇬🇲 · Administration</p>
-  <h1>Shop applications</h1>
-  <p class="dashboard-intro">Review each seller application before their shop becomes visible to customers.</p>
+  <h1>Brand applications</h1>
+  <p class="dashboard-intro">Review each seller application before their brand becomes visible to customers.</p>
   {% for shop in shops %}
     <article class="admin-action-card" style="margin: 1rem 0;">
       <span class="action-kicker">{{ shop.category }} · Submitted {{ shop.created_at.strftime("%d %b %Y") }}</span>
@@ -17,14 +17,14 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="field"><label for="admin-note-{{ shop.id }}">Note for seller (optional)</label><textarea id="admin-note-{{ shop.id }}" name="admin_note" rows="2" maxlength="1000">{{ shop.admin_note or "" }}</textarea></div>
         <div class="toolbar">
-          <button class="button" type="submit" name="decision" value="approve">Approve shop</button>
+          <button class="button" type="submit" name="decision" value="approve">Approve brand</button>
           <button class="button button-secondary" type="submit" name="decision" value="reject">Reject application</button>
-          {% if shop.status == "approved" %}<button class="button button-secondary" type="submit" name="decision" value="suspend">Suspend shop</button>{% endif %}
+          {% if shop.status == "approved" %}<button class="button button-secondary" type="submit" name="decision" value="suspend">Suspend brand</button>{% endif %}
         </div>
       </form>
     </article>
   {% else %}
-    <p>No shop applications have been submitted yet.</p>
+    <p>No brand applications have been submitted yet.</p>
   {% endfor %}
 </section>
 {% endblock %}
