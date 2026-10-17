@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Seller Dashboard | Kora Market{% endblock %}
+{% block title %}Seller Dashboard | GAM-MARKET 🇬🇲{% endblock %}
 {% block content %}
 <section class="admin-dashboard">
   <p class="eyebrow">Seller centre</p>
@@ -11,7 +11,7 @@
       <h2>{{ shop.name }}</h2>
       <p>{{ shop.description }}</p>
       <p><strong>Application status:</strong> {{ shop.status|title }}</p>
-      {% if shop.status == "pending" %}<p>Your application is waiting for administrator review.</p>{% elif shop.status == "approved" %}<p>Your shop is now public: <a href="{{ url_for('marketplace.shop_detail', slug=shop.slug) }}">View your shop</a></p>{% elif shop.status == "rejected" %}<p>Your application was not approved. Contact Kora Market support if you need clarification.</p>{% elif shop.status == "suspended" %}<p>This shop is currently not visible to customers.</p>{% endif %}
+      {% if shop.status == "pending" %}<p>Your application is waiting for administrator review.</p>{% elif shop.status == "approved" %}<p>Your shop is now public: <a href="{{ url_for('marketplace.shop_detail', slug=shop.slug) }}">View your shop</a></p>{% elif shop.status == "rejected" %}<p>Your application was not approved. Contact GAM-MARKET 🇬🇲 support if you need clarification.</p>{% elif shop.status == "suspended" %}<p>This shop is currently not visible to customers.</p>{% endif %}
       {% if shop.admin_note %}<p><strong>Administrator note:</strong> {{ shop.admin_note }}</p>{% endif %}
     </article>
   {% else %}
