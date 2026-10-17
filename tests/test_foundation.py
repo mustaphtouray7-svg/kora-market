@@ -27,7 +27,7 @@ def test_admin_dashboard_requires_authentication(client):
 
 def test_admin_password_is_hashed_and_login_works(app, client):
     with app.app_context():
-        admin = AdminUser(username="owner")
+        admin = AdminUser(username="owner@example.com")
         admin.set_password("correct horse battery")
         db.session.add(admin)
         db.session.commit()
@@ -37,11 +37,11 @@ def test_admin_password_is_hashed_and_login_works(app, client):
 
     response = client.post(
         "/admin/login",
-        data={"username": "OWNER", "password": "correct horse battery"},
+        data={"username": "owner@example.com", "password": "correct horse battery"},
         follow_redirects=True,
     )
     assert response.status_code == 200
-    assert b"Welcome back, owner." in response.data
+    assert b"You are signed in." in response.data
 
 
 def test_domain_schema_has_expected_foundation_tables(app):
@@ -96,7 +96,7 @@ def test_database_initialization_and_order_models_persist(app):
 def test_login_and_logout_require_valid_csrf_tokens(app, client):
     app.config["WTF_CSRF_ENABLED"] = True
     with app.app_context():
-        admin = AdminUser(username="owner")
+        admin = AdminUser(username="owner@example.com")
         admin.set_password("correct horse battery")
         db.session.add(admin)
         db.session.commit()
@@ -110,7 +110,7 @@ def test_login_and_logout_require_valid_csrf_tokens(app, client):
 
     rejected_login = client.post(
         "/admin/login",
-        data={"username": "owner", "password": "correct horse battery"},
+        data={"username": "owner@example.com", "password": "correct horse battery"},
     )
     assert rejected_login.status_code == 400
 
@@ -118,13 +118,13 @@ def test_login_and_logout_require_valid_csrf_tokens(app, client):
         "/admin/login",
         data={
             "csrf_token": csrf_token,
-            "username": "owner",
+            "username": "owner@example.com",
             "password": "correct horse battery",
         },
         follow_redirects=True,
     )
     assert dashboard.status_code == 200
-    assert b"Welcome back, owner." in dashboard.data
+    assert b"You are signed in." in dashboard.data
 
     rejected_logout = client.post("/admin/logout")
     assert rejected_logout.status_code == 400
