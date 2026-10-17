@@ -33,9 +33,9 @@ class SellerRegistrationForm(FlaskForm):
     full_name = StringField("Your full name", validators=[DataRequired(), Length(min=2, max=160)])
     email = StringField("Email address", validators=[DataRequired(), Email(), Length(max=254)])
     phone_number = StringField("Phone number", validators=[DataRequired(), Length(min=6, max=32)])
-    shop_name = StringField("Shop name", validators=[DataRequired(), Length(min=2, max=120)])
+    shop_name = StringField("Brand name", validators=[DataRequired(), Length(min=2, max=120)])
     category = SelectField(
-        "Shop category",
+        "Brand category",
         choices=[
             ("Fashion", "Fashion and clothing"),
             ("Electronics", "Electronics"),
@@ -46,10 +46,10 @@ class SellerRegistrationForm(FlaskForm):
         ],
         validators=[DataRequired()],
     )
-    description = TextAreaField("Tell customers about your shop", validators=[DataRequired(), Length(min=10, max=1200)])
+    description = TextAreaField("Tell customers about your brand", validators=[DataRequired(), Length(min=10, max=1200)])
     password = PasswordField("Password (at least 8 characters)", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
-    submit = SubmitField("Apply to open a shop")
+    submit = SubmitField("Create a brand profile")
 
 
 class SellerLoginForm(FlaskForm):
@@ -84,7 +84,7 @@ def seller_register():
 
         base_slug = _slugify(form.shop_name.data)
         if not base_slug:
-            flash("Please choose a shop name containing letters or numbers.", "error")
+            flash("Please choose a brand name containing letters or numbers.", "error")
             return render_template("marketplace/seller_register.html", form=form)
         slug = base_slug
         suffix = 2
@@ -116,7 +116,7 @@ def seller_register():
             return render_template("marketplace/seller_register.html", form=form)
 
         login_user(seller)
-        flash("Your shop application was submitted. It will appear publicly after administrator approval.", "success")
+        flash("Your brand application was submitted. It will appear publicly after administrator approval.", "success")
         return redirect(url_for("marketplace.seller_dashboard"))
 
     return render_template("marketplace/seller_register.html", form=form)
@@ -179,5 +179,5 @@ def review_shop(shop_id):
     shop.admin_note = note or None
     shop.reviewed_at = datetime.now(timezone.utc)
     db.session.commit()
-    flash(f"Shop '{shop.name}' status updated to {shop.status}.", "success")
+    flash(f"Brand '{shop.name}' status updated to {shop.status}.", "success")
     return redirect(url_for("marketplace.admin_shops"))
