@@ -66,6 +66,7 @@ class Shop(db.Model):
     reviewed_at = db.Column(db.DateTime(timezone=True))
 
     owner = db.relationship("Seller", back_populates="shops")
+    product_links = db.relationship("ShopProduct", back_populates="shop", cascade="all, delete-orphan")
 
     @property
     def is_public(self):
