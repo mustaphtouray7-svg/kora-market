@@ -3,12 +3,12 @@
 {% block content %}
 <section class="welcome hero">
   <div class="hero-copy">
-    <p class="eyebrow">{{ shop.category }} · GAM-MARKET 🇬🇲 shop</p>
+    <p class="eyebrow">{{ shop.category }} · GAM-MARKET 🇬🇲 brand</p>
     <h1>{{ shop.name }}</h1>
     <p>{{ shop.description }}</p>
-    <p><strong>Shop contact:</strong> {{ shop.contact_phone }}</p>
+    <p><strong>Brand contact:</strong> {{ shop.contact_phone }}</p>
     <p class="muted">This storefront has been approved by GAM-MARKET 🇬🇲. Product listings and seller inventory management are the next implementation phase.</p>
-    <a class="button button-secondary" href="{{ url_for('marketplace.shop_directory') }}">← Browse all shops</a>
+    <a class="button button-secondary" href="{{ url_for('marketplace.shop_directory') }}">← Browse all brands</a>
   </div>
 </section>
 {% endblock %}
