@@ -1,6 +1,7 @@
 from store.extensions import db
 from store.marketplace_models import Seller, Shop
-from store.models import AdminUser, Product\nfrom store.marketplace_models import ShopProduct
+from store.models import AdminUser, Product
+from store.marketplace_models import ShopProduct
 
 
 def test_seller_can_apply_but_pending_shop_is_not_public(client, app):
