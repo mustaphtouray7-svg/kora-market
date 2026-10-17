@@ -45,7 +45,7 @@ def create_app(test_config=None):
             return redirect(request.url.replace("http://", "https://", 1), code=308)
 
     from store import models  # noqa: F401
-    from store.marketplace_models import Seller, Shop
+    from store.marketplace_models import Seller, Shop, ShopProduct
     from store.auth import auth
     from store.marketplace import marketplace as marketplace_blueprint
 
@@ -73,7 +73,7 @@ def create_app(test_config=None):
     # Create the staff table and safely add the pickup-status column to existing orders.
     # Inspection keeps this migration compatible with both PostgreSQL and SQLite.
     with app.app_context():
-        db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__, Seller.__table__, Shop.__table__])
+        db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__, Seller.__table__, Shop.__table__, ShopProduct.__table__])
         inspector = inspect(db.engine)
         # Add nullable customer-account fields to existing customer records.
         # Existing guest checkouts remain valid and can continue without an account.
