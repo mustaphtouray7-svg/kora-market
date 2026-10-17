@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from store.extensions import db\nfrom store.models import Product
+from store.extensions import db
+from store.models import Product
 
 
 def utc_now():
