@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from store.extensions import db
+from store.extensions import db\nfrom store.models import Product
 
 
 def utc_now():
@@ -69,3 +69,17 @@ class Shop(db.Model):
     @property
     def is_public(self):
         return self.status == "approved"
+
+
+class ShopProduct(db.Model):
+    """Connect a catalog product to its shop; each product belongs to at most one shop."""
+
+    __tablename__ = "shop_products"
+
+    id = db.Column(db.Integer, primary_key=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey("shops.id"), nullable=False, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False, unique=True, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
+
+    shop = db.relationship("Shop", back_populates="product_links")
+    product = db.relationship(Product)
