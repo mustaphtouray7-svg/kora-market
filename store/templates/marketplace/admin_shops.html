@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Review Shop Applications | Kora Market{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+  <p class="eyebrow">Kora Market · Administration</p>
+  <h1>Shop applications</h1>
+  <p class="dashboard-intro">Review each seller application before their shop becomes visible to customers.</p>
+  {% for shop in shops %}
+    <article class="admin-action-card" style="margin: 1rem 0;">
+      <span class="action-kicker">{{ shop.category }} · Submitted {{ shop.created_at.strftime("%d %b %Y") }}</span>
+      <h2>{{ shop.name }}</h2>
+      <p>{{ shop.description }}</p>
+      <p><strong>Owner:</strong> {{ shop.owner.full_name }} · {{ shop.owner.email }} · {{ shop.contact_phone }}</p>
+      <p><strong>Status:</strong> {{ shop.status|title }}</p>
+      {% if shop.admin_note %}<p><strong>Previous note:</strong> {{ shop.admin_note }}</p>{% endif %}
+      <form method="post" action="{{ url_for('marketplace.review_shop', shop_id=shop.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label for="admin-note-{{ shop.id }}">Note for seller (optional)</label><textarea id="admin-note-{{ shop.id }}" name="admin_note" rows="2" maxlength="1000">{{ shop.admin_note or "" }}</textarea></div>
+        <div class="toolbar">
+          <button class="button" type="submit" name="decision" value="approve">Approve shop</button>
+          <button class="button button-secondary" type="submit" name="decision" value="reject">Reject application</button>
+          {% if shop.status == "approved" %}<button class="button button-secondary" type="submit" name="decision" value="suspend">Suspend shop</button>{% endif %}
+        </div>
+      </form>
+    </article>
+  {% else %}
+    <p>No shop applications have been submitted yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}
