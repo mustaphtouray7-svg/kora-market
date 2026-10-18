@@ -101,6 +101,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(160), nullable=False, index=True)
     description = db.Column(db.Text, nullable=False, default="")
+    category = db.Column(db.String(40), nullable=False, default="others", index=True)
     price = db.Column(db.Numeric(12, 2), nullable=False)
     image_url = db.Column(db.String(500))
     stock_quantity = db.Column(db.Integer, nullable=False, default=0)
