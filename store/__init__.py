@@ -94,6 +94,61 @@ def create_app(test_config=None):
                 connection.execute(text(
                     "CREATE UNIQUE INDEX IF NOT EXISTS ix_customers_email ON customers (email)"
                 ))
+
+        # Add product categories to existing databases without disturbing current products.
+        if inspector.has_table("products"):
+            product_columns = {column["name"] for column in inspector.get_columns("products")}
+            if "category" not in product_columns:
+                with db.engine.begin() as connection:
+                    connection.execute(text("ALTER TABLE products ADD COLUMN category VARCHAR(40) NOT NULL DEFAULT 'others'"))
+        # Keep a useful starter catalogue available for shoppers, with all sample prices below 500 GMD.
+        starter_products = [
+            ("Rice (1 kg)", "food", "Everyday rice for home cooking.", 75, 35),
+            ("Cooking oil (500 ml)", "food", "Cooking oil for daily meals.", 95, 28),
+            ("Onions (1 kg)", "food", "Fresh onions for everyday cooking.", 45, 40),
+            ("Potatoes (1 kg)", "food", "Potatoes for boiling, frying, and stews.", 60, 30),
+            ("Sugar (1 kg)", "food", "Granulated sugar for drinks and baking.", 70, 24),
+            ("Bread loaf", "food", "Fresh loaf for breakfast and snacks.", 35, 20),
+            ("Eggs (6 pack)", "food", "Half-dozen eggs for home meals.", 90, 18),
+            ("Spaghetti pack", "food", "Pasta for quick family meals.", 40, 32),
+            ("Tomato paste", "food", "Tomato paste for sauces and stews.", 25, 45),
+            ("Groundnuts (500 g)", "food", "Groundnuts for snacking or cooking.", 55, 22),
+            ("Tea bags pack", "food", "Tea bags for hot drinks.", 85, 16),
+            ("Biscuits pack", "food", "Biscuits for a quick snack.", 30, 38),
+            ("LED bulb", "fixtures", "Energy-saving LED bulb for home lighting.", 120, 20),
+            ("Door handle", "fixtures", "Simple replacement handle for interior doors.", 180, 12),
+            ("Wall hook set", "fixtures", "Hooks for hanging light household items.", 65, 25),
+            ("Power extension", "fixtures", "Multi-socket extension for home use.", 350, 10),
+            ("Bathroom soap dish", "fixtures", "Compact soap dish for bathroom use.", 90, 18),
+            ("Curtain tiebacks", "fixtures", "Pair of tiebacks for curtains.", 110, 14),
+            ("Tap washer set", "fixtures", "Small replacement washers for common taps.", 45, 30),
+            ("Cabinet knob", "fixtures", "Single replacement knob for cabinets.", 75, 24),
+            ("Picture hook set", "fixtures", "Hooks for hanging lightweight frames.", 50, 22),
+            ("Door stopper", "fixtures", "Rubber door stopper for home interiors.", 80, 17),
+            ("Small wall mirror", "fixtures", "Compact mirror for a bedroom or hallway.", 450, 8),
+            ("Shelf brackets (pair)", "fixtures", "Pair of brackets for a small wall shelf.", 300, 9),
+            ("Notebook", "others", "Everyday notebook for school or work.", 40, 30),
+            ("Ballpoint pens (3 pack)", "others", "Three pens for writing and note-taking.", 35, 35),
+            ("Laundry detergent (small)", "others", "Detergent for routine laundry.", 125, 16),
+            ("Bath towel", "others", "Soft everyday towel.", 250, 10),
+            ("Reusable water bottle", "others", "Reusable bottle for water on the go.", 180, 14),
+            ("Phone charging cable", "others", "USB charging cable for compatible devices.", 220, 12),
+            ("Toothbrush", "others", "Basic toothbrush for daily oral care.", 30, 28),
+            ("Washing sponge pack", "others", "Sponges for household cleaning.", 55, 24),
+            ("Plastic storage container", "others", "Container for keeping small items organized.", 150, 13),
+            ("Umbrella", "others", "Compact umbrella for rainy weather.", 400, 8),
+            ("Shopping tote bag", "others", "Reusable bag for everyday shopping.", 100, 18),
+            ("Sewing kit", "others", "Small kit for basic clothing repairs.", 160, 9),
+        ]
+        for name, category, description, price, stock in starter_products:
+            product = models.Product.query.filter_by(name=name).first()
+            if product is None:
+                db.session.add(models.Product(
+                    name=name, category=category, description=description,
+                    price=Decimal(str(price)), stock_quantity=stock, is_active=True
+                ))
+        db.session.commit()
+
         if inspector.has_table("orders"):
             order_columns = {column["name"] for column in inspector.get_columns("orders")}
             if "collection_status" not in order_columns:
