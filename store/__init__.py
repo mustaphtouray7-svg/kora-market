@@ -205,6 +205,80 @@ def create_app(test_config=None):
                     name=name, category=category, description=description,
                     price=Decimal(str(price)), stock_quantity=stock, is_active=True
                 ))
+        # Demo fashion storefronts with sample dress inventory. The seed is idempotent:
+        # existing seller accounts, brands, products, and product links are left intact.
+        demo_fashion_brands = [
+            {
+                "name": "Kaira Couture",
+                "slug": "kaira-couture",
+                "email": "kaira-couture-demo@gam-market.invalid",
+                "description": "A sample fashion brand featuring everyday dresses, occasion wear, and modern styles.",
+                "phone": "Seller contact to be added",
+                "image": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=82",
+                "dresses": [
+                    ("Kaira Floral Midi Dress", "Light floral midi dress for casual outings.", 450, "photo-1496747611176-843222e1e57c"),
+                    ("Kaira Classic Evening Dress", "Elegant evening dress for special occasions.", 480, "photo-1566174053879-31528523f8ae"),
+                    ("Kaira Everyday Dress", "Comfortable everyday dress with a simple silhouette.", 350, "photo-1539008835657-9e8e9680c956"),
+                ],
+            },
+            {
+                "name": "Ndey Dress Boutique",
+                "slug": "ndey-dress-boutique",
+                "email": "ndey-dress-boutique-demo@gam-market.invalid",
+                "description": "A sample boutique for colourful dresses, smart casual looks, and celebration outfits.",
+                "phone": "Seller contact to be added",
+                "image": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=82",
+                "dresses": [
+                    ("Ndey Smart Casual Dress", "A smart casual dress suitable for outings and gatherings.", 400, "photo-1483985988355-763728e1935b"),
+                    ("Ndey Occasion Dress", "A dress for parties, celebrations, and events.", 475, "photo-1515886657613-9f3515b0c78f"),
+                    ("Ndey Printed Day Dress", "A printed day dress for everyday wear.", 325, "photo-1485230895905-ec40ba36b9bc"),
+                ],
+            },
+        ]
+        for brand_data in demo_fashion_brands:
+            seller = Seller.query.filter_by(email=brand_data["email"]).first()
+            if seller is None:
+                seller = Seller(
+                    full_name=brand_data["name"],
+                    email=brand_data["email"],
+                    phone_number=brand_data["phone"],
+                )
+                seller.set_password(secrets.token_urlsafe(32))
+                db.session.add(seller)
+                db.session.flush()
+            shop = Shop.query.filter_by(slug=brand_data["slug"]).first()
+            if shop is None:
+                shop = Shop(
+                    owner=seller,
+                    name=brand_data["name"],
+                    slug=brand_data["slug"],
+                    description=brand_data["description"],
+                    image_data=brand_data["image"],
+                    category="Fashion",
+                    contact_phone=brand_data["phone"],
+                    status="approved",
+                    reviewed_at=datetime.utcnow(),
+                )
+                db.session.add(shop)
+                db.session.flush()
+            for dress_name, dress_description, dress_price, dress_photo in brand_data["dresses"]:
+                dress = models.Product.query.filter_by(name=dress_name).first()
+                if dress is None:
+                    dress = models.Product(
+                        name=dress_name,
+                        category="others",
+                        description=dress_description,
+                        price=Decimal(str(dress_price)),
+                        image_url=f"https://images.unsplash.com/{dress_photo}?auto=format&fit=crop&w=800&q=82",
+                        stock_quantity=8,
+                        is_active=True,
+                    )
+                    db.session.add(dress)
+                    db.session.flush()
+                if ShopProduct.query.filter_by(shop_id=shop.id, product_id=dress.id).first() is None:
+                    # Product can belong to only one shop; do not reassign products owned elsewhere.
+                    if not ShopProduct.query.filter_by(product_id=dress.id).first():
+                        db.session.add(ShopProduct(shop_id=shop.id, product_id=dress.id))
         db.session.commit()
 
         if inspector.has_table("orders"):
