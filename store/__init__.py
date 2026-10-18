@@ -173,12 +173,16 @@ def create_app(test_config=None):
     @app.get("/products")
     def catalog():
         search = (request.args.get("q") or "").strip()
-        query = (
-            db.session.query(models.Product)
-            .join(ShopProduct, ShopProduct.product_id == models.Product.id)
-            .join(Shop, Shop.id == ShopProduct.shop_id)
-            .filter(models.Product.is_active.is_(True), Shop.status == "approved")
+        category = (request.args.get("category") or "").strip().lower()
+        allowed_categories = {"food", "fixtures", "others"}
+        if category not in allowed_categories:
+            category = ""
+        query = db.session.query(models.Product).filter(
+            models.Product.is_active.is_(True),
+            models.Product.price < Decimal("500.00"),
         )
+        if category:
+            query = query.filter(models.Product.category == category)
         if search:
             pattern = f"%{search}%"
             query = query.filter(
@@ -187,8 +191,8 @@ def create_app(test_config=None):
                     models.Product.description.ilike(pattern),
                 )
             )
-        products = query.order_by(models.Product.created_at.desc()).all()
-        return render_template("catalog.html", products=products, search=search)
+        products = query.order_by(models.Product.category.asc(), models.Product.name.asc()).all()
+        return render_template("catalog.html", products=products, search=search, category=category)
 
     @app.get("/products/<int:product_id>")
     def product_detail(product_id):
