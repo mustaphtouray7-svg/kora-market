@@ -21,11 +21,7 @@
   <section class="product-grid">
     {% for product in products %}
       <article class="product-card">
-        {% if product.image_url %}
-          <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
-        {% else %}
-          <div class="product-placeholder">{{ product.name[:1] }}</div>
-        {% endif %}
+        <img src="{{ product.image_url or ('https://loremflickr.com/640/480/' ~ (product.name | replace(' ', ',')) ~ '?lock=' ~ product.id) }}" alt="{{ product.name }}" loading="lazy">
         <div class="product-copy">
           <p class="product-category">{{ 'Foods' if product.category == 'food' else 'Fixtures' if product.category == 'fixtures' else 'Others' }}</p>
           <h2>{{ product.name }}</h2>
