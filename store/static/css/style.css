@@ -987,3 +987,11 @@ button:disabled { opacity:.45; cursor:not-allowed; }
   background: #fff;
 }
 .yonna-payment-amount { font-size: 1.08rem; }
+
+
+/* Browse catalogue category filters */
+.catalog-intro { margin: 12px 0 20px; color: var(--muted); line-height: 1.65; }
+.category-filter { display:flex; flex-wrap:wrap; gap:10px; margin: 0 0 24px; }
+.category-filter a { display:inline-flex; align-items:center; min-height:42px; padding:9px 16px; border:1px solid #d4e1d8; border-radius:999px; color:var(--green); background:#fff; font-weight:750; text-decoration:none; }
+.category-filter a:hover, .category-filter a.active { border-color:var(--green); color:#fff; background:var(--green); }
+.product-category { margin:0; color:#628173; font-size:.74rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
