@@ -26,7 +26,7 @@
       <div class="product-grid preview-grid">
         {% for shop in approved_shops %}
           <article class="product-card">
-            <div class="product-placeholder">{{ shop.name[:1] }}</div>
+            {% if shop.image_data %}<img src="{{ shop.image_data }}" alt="{{ shop.name }} brand picture" loading="lazy">{% else %}<div class="product-placeholder">{{ shop.name[:1] }}</div>{% endif %}
             <div class="product-copy">
               <p class="eyebrow">{{ shop.category }}</p>
               <h2>{{ shop.name }}</h2>
