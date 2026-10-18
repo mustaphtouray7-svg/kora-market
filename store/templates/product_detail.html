@@ -3,7 +3,7 @@
 {% block content %}
   <section class="product-detail">
     <div class="product-visual">
-      <img src="{{ product.image_url or ('https://loremflickr.com/800/600/' ~ (product.name | replace(' ', ',')) ~ '?lock=' ~ product.id) }}" alt="{{ product.name }}" loading="lazy">
+      <img src="{{ product_photo(product, 800) }}" alt="{{ product.name }}" loading="lazy">
     </div>
     <div class="product-detail-copy">
       <p class="eyebrow">Featured item</p>
