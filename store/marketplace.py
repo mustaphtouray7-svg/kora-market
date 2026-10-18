@@ -1,3 +1,4 @@
+import base64
 import re
 from datetime import datetime, timezone
 from functools import wraps
@@ -6,8 +7,9 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_wtf import FlaskForm
 from sqlalchemy.exc import IntegrityError
-from wtforms import PasswordField, SelectField, StringField, SubmitField, TextAreaField
+from wtforms import FileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
+from flask_wtf.file import FileAllowed, FileRequired
 
 from store.extensions import db
 from store.marketplace_models import Seller, Shop
@@ -47,6 +49,7 @@ class SellerRegistrationForm(FlaskForm):
         validators=[DataRequired()],
     )
     description = TextAreaField("Tell customers about your brand", validators=[DataRequired(), Length(min=10, max=1200)])
+    image_file = FileField("Upload brand picture", validators=[FileRequired(message="Please upload a picture for your brand."), FileAllowed(["jpg", "jpeg", "png", "webp"], "Upload a JPG, PNG, or WEBP picture.")])
     password = PasswordField("Password (at least 8 characters)", validators=[DataRequired(), Length(min=8, max=128)])
     confirm_password = PasswordField("Confirm password", validators=[DataRequired(), EqualTo("password", message="Passwords must match.")])
     submit = SubmitField("Create a brand profile")
@@ -77,6 +80,12 @@ def seller_register():
 
     form = SellerRegistrationForm()
     if form.validate_on_submit():
+        image_file = form.image_file.data
+        image_bytes = image_file.read(4 * 1024 * 1024 + 1)
+        if not image_bytes or len(image_bytes) > 4 * 1024 * 1024:
+            flash("Please upload a brand picture smaller than 4 MB.", "error")
+            return render_template("marketplace/seller_register.html", form=form)
+        image_data = f"data:{image_file.mimetype};base64,{base64.b64encode(image_bytes).decode('ascii')}"
         email = form.email.data.strip().lower()
         if Seller.query.filter_by(email=email).first():
             flash("An account with that email already exists. Please sign in.", "error")
@@ -104,6 +113,7 @@ def seller_register():
             slug=slug,
             category=form.category.data,
             description=form.description.data.strip(),
+            image_data=image_data,
             contact_phone=form.phone_number.data.strip(),
             status="pending",
         )
