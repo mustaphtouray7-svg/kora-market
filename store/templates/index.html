@@ -50,7 +50,7 @@
       <div class="product-grid preview-grid">
         {% for product in products[:4] %}
           <article class="product-card">
-            <img src="{{ product.image_url or ('https://loremflickr.com/640/480/' ~ (product.name | replace(' ', ',')) ~ '?lock=' ~ product.id) }}" alt="{{ product.name }}" loading="lazy">
+            <img src="{{ product_photo(product, 640) }}" alt="{{ product.name }}" loading="lazy">
             <div class="product-copy">
               <h2>{{ product.name }}</h2>
               <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
