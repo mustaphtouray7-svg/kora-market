@@ -212,13 +212,13 @@ def create_app(test_config=None):
                 "name": "Kaira Couture",
                 "slug": "kaira-couture",
                 "email": "kaira-couture-demo@gam-market.invalid",
-                "description": "A sample fashion brand featuring everyday dresses, occasion wear, and modern styles.",
+                "description": "African Muslim fashion focused exclusively on modest dresses, including flowing boubous, Ankara abayas, and elegant kaftans.",
                 "phone": "Seller contact to be added",
                 "image": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=82",
                 "dresses": [
-                    ("Kaira Floral Midi Dress", "Light floral midi dress for casual outings.", 450, "photo-1496747611176-843222e1e57c"),
-                    ("Kaira Classic Evening Dress", "Elegant evening dress for special occasions.", 480, "photo-1566174053879-31528523f8ae"),
-                    ("Kaira Everyday Dress", "Comfortable everyday dress with a simple silhouette.", 350, "photo-1539008835657-9e8e9680c956"),
+                    ("Kaira Floral Midi Dress", "Kaira African Boubou Dress", "A flowing African boubou designed for modest coverage and comfortable everyday wear.", 450, "photo-1496747611176-843222e1e57c"),
+                    ("Kaira Classic Evening Dress", "Kaira Embroidered Kaftan", "An elegant modest kaftan for Eid, weddings, and other special occasions.", 480, "photo-1566174053879-31528523f8ae"),
+                    ("Kaira Everyday Dress", "Kaira Ankara Abaya Dress", "A modest abaya-inspired dress with African Ankara styling.", 350, "photo-1539008835657-9e8e9680c956"),
                 ],
             },
             {
@@ -229,9 +229,9 @@ def create_app(test_config=None):
                 "phone": "Seller contact to be added",
                 "image": "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=82",
                 "dresses": [
-                    ("Ndey Smart Casual Dress", "A smart casual dress suitable for outings and gatherings.", 400, "photo-1483985988355-763728e1935b"),
-                    ("Ndey Occasion Dress", "A dress for parties, celebrations, and events.", 475, "photo-1515886657613-9f3515b0c78f"),
-                    ("Ndey Printed Day Dress", "A printed day dress for everyday wear.", 325, "photo-1485230895905-ec40ba36b9bc"),
+                    ("Ndey Smart Casual Dress", "Ndey Smart Casual Dress", "A smart casual dress suitable for outings and gatherings.", 400, "photo-1483985988355-763728e1935b"),
+                    ("Ndey Occasion Dress", "Ndey Occasion Dress", "A dress for parties, celebrations, and events.", 475, "photo-1515886657613-9f3515b0c78f"),
+                    ("Ndey Printed Day Dress", "Ndey Printed Day Dress", "A printed day dress for everyday wear.", 325, "photo-1485230895905-ec40ba36b9bc"),
                 ],
             },
         ]
@@ -261,8 +261,13 @@ def create_app(test_config=None):
                 )
                 db.session.add(shop)
                 db.session.flush()
-            for dress_name, dress_description, dress_price, dress_photo in brand_data["dresses"]:
+            else:
+                shop.description = brand_data["description"]
+            for old_name, dress_name, dress_description, dress_price, dress_photo in brand_data["dresses"]:
                 dress = models.Product.query.filter_by(name=dress_name).first()
+                if dress is None and old_name != dress_name:
+                    # Rename previously seeded Kaira sample dresses instead of duplicating them.
+                    dress = models.Product.query.filter_by(name=old_name).first()
                 if dress is None:
                     dress = models.Product(
                         name=dress_name,
@@ -275,6 +280,12 @@ def create_app(test_config=None):
                     )
                     db.session.add(dress)
                     db.session.flush()
+                else:
+                    dress.name = dress_name
+                    dress.description = dress_description
+                    dress.price = Decimal(str(dress_price))
+                    dress.image_url = f"https://images.unsplash.com/{dress_photo}?auto=format&fit=crop&w=800&q=82"
+                    dress.is_active = True
                 if ShopProduct.query.filter_by(shop_id=shop.id, product_id=dress.id).first() is None:
                     # Product can belong to only one shop; do not reassign products owned elsewhere.
                     if not ShopProduct.query.filter_by(product_id=dress.id).first():
