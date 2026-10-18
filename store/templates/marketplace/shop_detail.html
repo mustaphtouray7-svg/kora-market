@@ -8,8 +8,33 @@
     <h1>{{ shop.name }}</h1>
     <p>{{ shop.description }}</p>
     <p><strong>Brand contact:</strong> {{ shop.contact_phone }}</p>
-    <p class="muted">This storefront has been approved by GAM-MARKET 🇬🇲. Product listings and seller inventory management are the next implementation phase.</p>
     <a class="button button-secondary" href="{{ url_for('marketplace.shop_directory') }}">← Browse all brands</a>
+  </div>
+</section>
+<section class="home-shop-section">
+  <div class="home-section-heading"><div><h2>Available dresses</h2><p>Browse this brand's current sample collection.</p></div></div>
+  {% set dress_links = shop.product_links|selectattr("product.is_active")|list %}
+  {% if dress_links %}
+    <div class="product-grid">
+      {% for link in dress_links %}
+        <article class="product-card">
+          {% if link.product.image_url %}
+            <img src="{{ link.product.image_url }}" alt="{{ link.product.name }}" loading="lazy">
+          {% else %}
+            <div class="product-placeholder">{{ link.product.name[:1] }}</div>
+          {% endif %}
+          <div class="product-copy">
+            <h3>{{ link.product.name }}</h3>
+            <p>{{ link.product.description }}</p>
+            <p class="product-price">GMD {{ "%.2f"|format(link.product.price) }}</p>
+            <a href="{{ url_for('product_detail', product_id=link.product.id) }}">View dress</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="home-empty"><p>This brand has no listed dresses yet.</p></div>
+  {% endif %}
   </div>
 </section>
 {% endblock %}
