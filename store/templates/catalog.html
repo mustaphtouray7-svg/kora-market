@@ -3,7 +3,8 @@
 {% block content %}
   <section class="catalog-header">
     <p class="eyebrow">GAM-MARKET 🇬🇲</p>
-    <h1>Shop the collection</h1>
+    <h1>Browse Products</h1>
+    <p class="catalog-intro">Explore everyday essentials across Foods, Fixtures, and Others. Every product shown is priced below 500 GMD.</p>
     <form class="search-bar" method="get" action="{{ url_for('catalog') }}">
       <label class="sr-only" for="q">Search products</label>
       <input id="q" name="q" type="search" value="{{ search }}" placeholder="Search products..." autocomplete="off">
@@ -11,6 +12,12 @@
       {% if search %}<a class="button button-secondary" href="{{ url_for('catalog') }}">Clear</a>{% endif %}
     </form>
   </section>
+  <nav class="category-filter" aria-label="Filter products by category">
+    <a class="{{ 'active' if not category else '' }}" href="{{ url_for('catalog', q=search or None) }}">All products</a>
+    <a class="{{ 'active' if category == 'food' else '' }}" href="{{ url_for('catalog', category='food', q=search or None) }}">Foods</a>
+    <a class="{{ 'active' if category == 'fixtures' else '' }}" href="{{ url_for('catalog', category='fixtures', q=search or None) }}">Fixtures</a>
+    <a class="{{ 'active' if category == 'others' else '' }}" href="{{ url_for('catalog', category='others', q=search or None) }}">Others</a>
+  </nav>
   <section class="product-grid">
     {% for product in products %}
       <article class="product-card">
@@ -20,6 +27,7 @@
           <div class="product-placeholder">{{ product.name[:1] }}</div>
         {% endif %}
         <div class="product-copy">
+          <p class="product-category">{{ 'Foods' if product.category == 'food' else 'Fixtures' if product.category == 'fixtures' else 'Others' }}</p>
           <h2>{{ product.name }}</h2>
           <p class="product-price">{{ "%.2f" | format(product.price) }} GMD</p>
           <p>{{ product.description or 'Freshly stocked and ready for your next pick-up.' }}</p>
