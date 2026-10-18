@@ -4,6 +4,7 @@
 <section class="welcome hero">
   <div class="hero-copy">
     <p class="eyebrow">{{ shop.category }} · GAM-MARKET 🇬🇲 brand</p>
+    {% if shop.image_data %}<img src="{{ shop.image_data }}" alt="{{ shop.name }} brand picture">{% endif %}
     <h1>{{ shop.name }}</h1>
     <p>{{ shop.description }}</p>
     <p><strong>Brand contact:</strong> {{ shop.contact_phone }}</p>
