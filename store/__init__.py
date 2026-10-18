@@ -63,6 +63,64 @@ def create_app(test_config=None):
             return seller if seller is not None and seller.is_active else None
         return models.load_admin_user(user_id)
 
+
+    # Curated product photos for the starter catalogue. Seller-provided image URLs
+    # remain preferred; these photos keep sample products from showing placeholders.
+    product_photo_ids = {
+        "Rice (1 kg)": "photo-1586201375761-83865001e31c",
+        "Cooking oil (500 ml)": "photo-1474979266404-7eaacbcd87c5",
+        "Onions (1 kg)": "photo-1518977676601-b53f82aba655",
+        "Potatoes (1 kg)": "photo-1518977676601-b53f82aba655",
+        "Sugar (1 kg)": "photo-1581441363689-1f3c3c414635",
+        "Bread loaf": "photo-1509440159596-0249088772ff",
+        "Eggs (6 pack)": "photo-1518569656558-1f25e69d93d7",
+        "Spaghetti pack": "photo-1551183053-bf91a1d81141",
+        "Tomato paste": "photo-1546094096-0df4bcaaa337",
+        "Groundnuts (500 g)": "photo-1567892737950-30c4db37cd89",
+        "Tea bags pack": "photo-1544787219-7f47ccb76574",
+        "Biscuits pack": "photo-1499636136210-6f4ee915583e",
+        "LED bulb": "photo-1507473885765-e6ed057f782c",
+        "Door handle": "photo-1600607687939-ce8a6c25118c",
+        "Wall hook set": "photo-1600566753086-00f18fb6b3ea",
+        "Power extension": "photo-1558002038-1055907df827",
+        "Bathroom soap dish": "photo-1620626011761-996317b8d101",
+        "Curtain tiebacks": "photo-1600210492486-724fe5c67fb0",
+        "Tap washer set": "photo-1621905251189-08b45d6a269e",
+        "Cabinet knob": "photo-1616486338812-3dadae4b4ace",
+        "Picture hook set": "photo-1600566753190-17f0baa2a6c3",
+        "Door stopper": "photo-1600607687920-4e2a09cf159d",
+        "Small wall mirror": "photo-1618221195710-dd6b41faaea6",
+        "Shelf brackets (pair)": "photo-1600585154340-be6161a56a0c",
+        "Notebook": "photo-1512820790803-83ca734da794",
+        "Ballpoint pens (3 pack)": "photo-1455390582262-044cdeb277a6",
+        "Laundry detergent (small)": "photo-1608248543803-ba4f8c70ae0b",
+        "Bath towel": "photo-1600369671236-e74521d4b6ad",
+        "Reusable water bottle": "photo-1602143407151-7111542de6e8",
+        "Phone charging cable": "photo-1583863788434-e58a36330cf0",
+        "Toothbrush": "photo-1609840114035-3c981b782dfe",
+        "Washing sponge pack": "photo-1585421514284-efb74c2b69ba",
+        "Plastic storage container": "photo-1583947581924-860bda6a26df",
+        "Umbrella": "photo-1534274988757-a28bf1a57c17",
+        "Shopping tote bag": "photo-1590874103328-eac38a683ce7",
+        "Sewing kit": "photo-1604881988758-f76ad2f7aac1",
+    }
+
+    def product_photo(product, width=640):
+        if product.image_url:
+            return product.image_url
+        photo_id = product_photo_ids.get(product.name)
+        if photo_id:
+            return f"https://images.unsplash.com/{photo_id}?auto=format&fit=crop&w={width}&q=82"
+        # Stable category-specific fallback for products added later.
+        fallback_ids = {
+            "food": "photo-1542838132-92c53300491e",
+            "fixtures": "photo-1600607687939-ce8a6c25118c",
+            "others": "photo-1583947581924-860bda6a26df",
+        }
+        return f"https://images.unsplash.com/{fallback_ids.get(product.category, fallback_ids['others'])}?auto=format&fit=crop&w={width}&q=82"
+
+    app.jinja_env.globals["product_photo"] = product_photo
+
     @app.context_processor
     def inject_marketplace_shops():
         return {
