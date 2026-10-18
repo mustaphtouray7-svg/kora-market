@@ -58,6 +58,7 @@ class Shop(db.Model):
     name = db.Column(db.String(120), nullable=False)
     slug = db.Column(db.String(140), nullable=False, unique=True, index=True)
     description = db.Column(db.String(1200), nullable=False, default="")
+    image_data = db.Column(db.Text)
     category = db.Column(db.String(80), nullable=False)
     contact_phone = db.Column(db.String(32), nullable=False)
     status = db.Column(db.String(24), nullable=False, default="pending", index=True)
