@@ -3,11 +3,7 @@
 {% block content %}
   <section class="product-detail">
     <div class="product-visual">
-      {% if product.image_url %}
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
-      {% else %}
-        <div class="product-placeholder large">{{ product.name[:1] }}</div>
-      {% endif %}
+      <img src="{{ product.image_url or ('https://loremflickr.com/800/600/' ~ (product.name | replace(' ', ',')) ~ '?lock=' ~ product.id) }}" alt="{{ product.name }}" loading="lazy">
     </div>
     <div class="product-detail-copy">
       <p class="eyebrow">Featured item</p>
