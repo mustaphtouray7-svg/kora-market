@@ -75,6 +75,11 @@ def create_app(test_config=None):
     with app.app_context():
         db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__, Seller.__table__, Shop.__table__, ShopProduct.__table__])
         inspector = inspect(db.engine)
+        if inspector.has_table("shops"):
+            shop_columns = {column["name"] for column in inspector.get_columns("shops")}
+            if "image_data" not in shop_columns:
+                with db.engine.begin() as connection:
+                    connection.execute(text("ALTER TABLE shops ADD COLUMN image_data TEXT"))
         # Add nullable customer-account fields to existing customer records.
         # Existing guest checkouts remain valid and can continue without an account.
         if inspector.has_table("customers"):
@@ -102,7 +107,9 @@ def create_app(test_config=None):
     def index():
         products = (
             db.session.query(models.Product)
-            .filter_by(is_active=True)
+            .join(ShopProduct, ShopProduct.product_id == models.Product.id)
+            .join(Shop, Shop.id == ShopProduct.shop_id)
+            .filter(models.Product.is_active.is_(True), Shop.status == "approved")
             .order_by(models.Product.created_at.desc())
             .all()
         )
@@ -111,7 +118,12 @@ def create_app(test_config=None):
     @app.get("/products")
     def catalog():
         search = (request.args.get("q") or "").strip()
-        query = db.session.query(models.Product).filter_by(is_active=True)
+        query = (
+            db.session.query(models.Product)
+            .join(ShopProduct, ShopProduct.product_id == models.Product.id)
+            .join(Shop, Shop.id == ShopProduct.shop_id)
+            .filter(models.Product.is_active.is_(True), Shop.status == "approved")
+        )
         if search:
             pattern = f"%{search}%"
             query = query.filter(
