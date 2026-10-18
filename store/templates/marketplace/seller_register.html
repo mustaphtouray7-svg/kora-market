@@ -5,13 +5,16 @@
   <p class="eyebrow">Sell on GAM-MARKET 🇬🇲</p>
   <h1>Create your brand profile</h1>
   <p class="muted">Create a seller account and submit your brand profile for review. Your brand will not appear publicly until an administrator approves it.</p>
-  <form method="post" novalidate>
+  <form method="post" enctype="multipart/form-data" novalidate>
     {{ form.hidden_tag() }}
-    {% for field in [form.full_name, form.email, form.phone_number, form.shop_name, form.category, form.description, form.password, form.confirm_password] %}
+    {% for field in [form.full_name, form.email, form.phone_number, form.shop_name, form.category, form.description, form.image_file, form.password, form.confirm_password] %}
       <div class="field">
         {{ field.label }}
         {% if field.name == "description" %}
           {{ field(rows="4", placeholder="What products or services will customers find under your brand?") }}
+        {% elif field.name == "image_file" %}
+          {{ field(accept="image/jpeg,image/png,image/webp") }}
+          <small class="muted">Required. JPG, PNG, or WEBP; maximum 4 MB.</small>
         {% elif field.name == "password" or field.name == "confirm_password" %}
           {{ field(autocomplete="new-password") }}
         {% elif field.name == "email" %}
