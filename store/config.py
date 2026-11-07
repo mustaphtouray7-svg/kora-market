@@ -14,6 +14,13 @@ class Config:
     WAYCHIT_API_KEY = os.environ.get("WAYCHIT_API_KEY")
     WAYCHIT_WEBHOOK_SECRET = os.environ.get("WAYCHIT_WEBHOOK_SECRET")
     WAYCHIT_API_BASE = os.environ.get("WAYCHIT_API_BASE", "https://api.waychit.com")
+    WAVE_API_KEY = os.environ.get("WAVE_API_KEY")
+    WAVE_CURRENCY = os.environ.get("WAVE_CURRENCY", "GMD")
+    APS_APP_TOKEN = os.environ.get("APS_APP_TOKEN")
+    APS_APP_SECRET = os.environ.get("APS_APP_SECRET")
+    APS_MERCHANT_GUID = os.environ.get("APS_MERCHANT_GUID")
+    APS_API_BASE = os.environ.get("APS_API_BASE", "https://fpf-api.proc-gw.com")
+    APS_CALLBACK_SECRET = os.environ.get("APS_CALLBACK_SECRET")
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
     # Neon/serverless PostgreSQL can close idle pooled connections. Verify each
     # connection before reuse and recycle connections before they become stale.
