@@ -584,34 +584,160 @@ def create_app(test_config=None):
         return receipt
 
 
+    def _confirm_wave_checkout(order, checkout):
+        """Confirm only the matching Wave checkout after validating its fields."""
+        if not isinstance(checkout, dict):
+            return False
+        payment = (
+            models.Payment.query
+            .filter_by(order_id=order.id, provider="Wave")
+            .order_by(models.Payment.created_at.desc())
+            .first()
+        )
+        if payment is None:
+            return False
+        if checkout.get("client_reference") != order.order_number:
+            return False
+        if payment.provider_reference and checkout.get("id") != payment.provider_reference:
+            return False
+        if str(checkout.get("payment_status", "")).lower() != "succeeded":
+            return False
+        try:
+            paid_amount = Decimal(str(checkout.get("amount"))).quantize(Decimal("0.01"))
+            expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"))
+        except Exception:
+            return False
+        if paid_amount != expected_amount:
+            return False
+        if str(checkout.get("currency", "")).upper() != order.currency.upper():
+            return False
+
+        if order.payment_status != "paid":
+            payment.status = "paid"
+            payment.provider_reference = checkout.get("id") or payment.provider_reference
+            order.payment_status = "paid"
+            order.status = "confirmed"
+            _ensure_receipt(order)
+            db.session.commit()
+        return True
+
+
+    def _verify_wave_webhook_signature(signature, raw_body, secret):
+        """Verify Wave's timestamped HMAC-SHA256 webhook signature."""
+        if not signature or not secret:
+            return False
+        try:
+            parts = [part.strip() for part in signature.split(",")]
+            timestamps = [part[2:] for part in parts if part.startswith("t=")]
+            signatures = [part[3:] for part in parts if part.startswith("v1=")]
+            if len(timestamps) != 1 or not signatures:
+                return False
+            timestamp = int(timestamps[0])
+            now = int(datetime.utcnow().timestamp())
+            if timestamp < now - 300 or timestamp > now + 30:
+                return False
+            expected = hmac.new(
+                secret.encode("utf-8"),
+                str(timestamp).encode("ascii") + raw_body,
+                hashlib.sha256,
+            ).hexdigest()
+            return any(hmac.compare_digest(expected, item) for item in signatures)
+        except (TypeError, ValueError, UnicodeError):
+            return False
+
+
     @app.get("/payment/wave/success/<int:order_id>")
     def wave_payment_success(order_id):
-        order=models.Order.query.get_or_404(order_id); api_key=app.config.get("WAVE_API_KEY")
+        order = models.Order.query.get_or_404(order_id)
+        api_key = app.config.get("WAVE_API_KEY")
         if not api_key:
-            return redirect(url_for("payment_pending",order_id=order.id))
+            return redirect(url_for("payment_pending", order_id=order.id))
         try:
-            url="https://api.wave.com/v1/checkout/sessions/search?client_reference="+urllib.parse.quote(order.order_number)
-            data=_json_request(url,None,{"Authorization":f"Bearer {api_key}"},method="GET")
-            result=(data.get("result") or [None])[0]
-            if result and result.get("payment_status")=="succeeded":
-                order.payment_status="paid"; order.status="confirmed"
-                if order.payments:
-                    order.payments[-1].status="paid"; order.payments[-1].provider_reference=result.get("id")
-                _ensure_receipt(order)
-                db.session.commit()
-                return render_template("payment_pending.html",order=order,payment=order.payments[-1] if order.payments else None,provider_name="Wave",paid=True)
+            url = "https://api.wave.com/v1/checkout/sessions/search?client_reference=" + urllib.parse.quote(order.order_number)
+            data = _json_request(url, None, {"Authorization": f"Bearer {api_key}"}, method="GET")
+            payment = (
+                models.Payment.query
+                .filter_by(order_id=order.id, provider="Wave")
+                .order_by(models.Payment.created_at.desc())
+                .first()
+            )
+            expected_session_id = payment.provider_reference if payment else None
+            result = next(
+                (
+                    item for item in (data.get("result") or [])
+                    if item.get("client_reference") == order.order_number
+                    and (not expected_session_id or item.get("id") == expected_session_id)
+                ),
+                None,
+            )
+            if result and _confirm_wave_checkout(order, result):
+                return render_template(
+                    "payment_pending.html", order=order, payment=payment,
+                    provider_name="Wave", paid=True,
+                )
         except Exception:
             app.logger.exception("Wave payment verification failed")
-        flash("Wave payment has not been confirmed yet.","info")
-        return redirect(url_for("payment_pending",order_id=order.id))
+        flash("Wave payment has not been confirmed yet.", "info")
+        return redirect(url_for("payment_pending", order_id=order.id))
 
 
     @app.get("/payment/wave/error/<int:order_id>")
     def wave_payment_error(order_id):
-        order=models.Order.query.get_or_404(order_id)
-        if order.payments: order.payments[-1].status="failed"
-        db.session.commit()
-        return redirect(url_for("payment_pending",order_id=order.id))
+        order = models.Order.query.get_or_404(order_id)
+        # A browser redirect is not authoritative proof of a failed payment.
+        # Leave the payment pending until Wave's API or signed webhook confirms it.
+        return redirect(url_for("payment_pending", order_id=order.id))
+
+
+    @app.post("/payment/wave/webhook")
+    @csrf.exempt
+    def wave_payment_webhook():
+        secret = app.config.get("WAVE_WEBHOOK_SECRET")
+        if not secret:
+            return {"error": "Wave webhook verification is not configured"}, 503
+
+        raw_body = request.get_data()
+        signature = request.headers.get("Wave-Signature", "")
+        if not _verify_wave_webhook_signature(signature, raw_body, secret):
+            return {"error": "invalid signature"}, 401
+
+        try:
+            event = json.loads(raw_body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return {"error": "invalid JSON"}, 400
+
+        event_type = event.get("type")
+        data = event.get("data") or {}
+        if event_type not in {"checkout.session.completed", "checkout.session.payment_failed"}:
+            return {"status": "ignored"}, 200
+
+        client_reference = data.get("client_reference")
+        if not client_reference:
+            return {"error": "missing client reference"}, 400
+        order = models.Order.query.filter_by(order_number=client_reference).first()
+        if order is None:
+            return {"error": "order not found"}, 404
+
+        payment = (
+            models.Payment.query
+            .filter_by(order_id=order.id, provider="Wave")
+            .order_by(models.Payment.created_at.desc())
+            .first()
+        )
+        if payment is None:
+            return {"error": "Wave payment not found"}, 404
+
+        if event_type == "checkout.session.completed":
+            if not _confirm_wave_checkout(order, data):
+                return {"error": "checkout details do not match pending order"}, 409
+        else:
+            # Failure events can occur before a later successful attempt. Do not
+            # downgrade an already-paid order or permanently close its payment.
+            if order.payment_status != "paid" and data.get("id") == payment.provider_reference:
+                payment.status = "failed"
+                db.session.commit()
+
+        return {"status": "ok"}, 200
 
 
     @app.get("/payment/aps/redirect/<int:order_id>")
