@@ -1051,3 +1051,31 @@ button:disabled { opacity:.45; cursor:not-allowed; }
   .receipt-status,.receipt-grand-total { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
   .receipt-item,.receipt-detail-grid > div,.receipt-status { break-inside:avoid; }
 }
+
+/* Green identity and boxed receipt information */
+.receipt-paper { border-color:#d9e9df; }
+.receipt-status { border-color:#d4e8da; background:#f1f8f3; }
+.receipt-status-icon { background:#258653; }
+.receipt-status strong,.receipt-order-number,.receipt-section h2,.receipt-footer strong { color:#17613e; }
+.receipt-status.is-paid { border-color:#bfe2cb; background:#edf8f0; }
+.receipt-status.is-paid .receipt-status-icon { background:#16834b; }
+.receipt-status.is-paid strong { color:#17613e; }
+.receipt-order-heading { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-items:stretch; padding:22px 0 18px; }
+.receipt-order-heading > div { min-width:0; padding:14px 16px; border:1px solid #dce9e0; border-radius:12px; background:#f8fbf9; }
+.receipt-date { text-align:left; }
+.receipt-detail-grid { gap:12px; }
+.receipt-detail-grid > div { padding:13px 14px; border:1px solid #e0eae3; border-radius:11px; background:#fbfdfb; }
+.receipt-address { grid-column:1/-1; }
+.receipt-number-row { margin:10px 0; padding:13px 15px; border:1px solid #dce9e0; border-radius:11px; background:#f8fbf9; }
+.receipt-item { margin:0 0 9px; padding:13px 14px; border:1px solid #e0eae3; border-radius:11px; background:#fbfdfb; }
+.receipt-grand-total { background:#17613e; }
+.receipt-footer { border-color:#d5e6da; }
+.receipt-brand-caption { color:#63816e; }
+@media(max-width:520px) {
+ .receipt-order-heading { grid-template-columns:1fr 1fr; gap:9px; }
+ .receipt-order-heading > div { padding:12px 10px; }
+ .receipt-detail-grid > div { padding:12px; }
+}
+@media print {
+ .receipt-detail-grid > div,.receipt-order-heading > div,.receipt-item,.receipt-status,.receipt-grand-total { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+}
