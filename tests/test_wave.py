@@ -180,7 +180,7 @@ def test_wave_reference_submission_never_marks_order_paid(app, client):
     assert response.request.path == f"/orders/{order_id}/receipt"
     assert b"Payment reference received" in response.data
     assert b"WAVE-TXN-12345" in response.data
-    assert b"Awaiting verification" in response.data
+    assert b"awaiting verification" in response.data
     with app.app_context():
         order = db.session.get(Order, order_id)
         assert order.payment_status == "pending"
