@@ -11,6 +11,9 @@ class Config:
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    WAYCHIT_API_KEY = os.environ.get("WAYCHIT_API_KEY")
+    WAYCHIT_WEBHOOK_SECRET = os.environ.get("WAYCHIT_WEBHOOK_SECRET")
+    WAYCHIT_API_BASE = os.environ.get("WAYCHIT_API_BASE", "https://api.waychit.com")
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
     # Neon/serverless PostgreSQL can close idle pooled connections. Verify each
     # connection before reuse and recycle connections before they become stale.

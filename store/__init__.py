@@ -18,6 +18,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from store.config import Config
 from store.extensions import csrf, db, login_manager, migrate
+from store.waychit import create_payment_request as create_waychit_payment_request, extract_payment_request, verify_waychit_signature
 
 
 def create_app(test_config=None):
@@ -440,6 +441,22 @@ def create_app(test_config=None):
         return _json_request("https://api.wave.com/v1/checkout/sessions", payload, {"Authorization":f"Bearer {api_key}"})
 
 
+    def _waychit_checkout(order):
+        api_key = app.config.get("WAYCHIT_API_KEY")
+        if not api_key:
+            raise RuntimeError("Waychit payment is not configured.")
+        return create_waychit_payment_request(
+            api_key=api_key,
+            api_base=app.config.get("WAYCHIT_API_BASE", "https://api.waychit.com"),
+            amount=str(order.total.quantize(Decimal("0.01"))),
+            description=f"GAM-MARKET order {order.order_number}",
+            client_reference=order.order_number,
+            success_redirect_url=url_for("waychit_payment_return", order_id=order.id, _external=True),
+            failure_redirect_url=url_for("waychit_payment_return", order_id=order.id, _external=True),
+            metadata={"orderId": order.id, "orderNumber": order.order_number},
+        )
+
+
     def _aps_methods():
         token, secret, merchant = app.config.get("APS_APP_TOKEN"), app.config.get("APS_APP_SECRET"), app.config.get("APS_MERCHANT_GUID")
         if not token or not secret or not merchant:
@@ -481,7 +498,7 @@ def create_app(test_config=None):
         branch_id = request.form.get("branch_id", type=int) or None
         provider = (request.form.get("provider") or "").strip().lower()
         payer_phone = (request.form.get("payer_phone_number") or "").strip()
-        allowed = {"wave":"Wave","aps":"APS","yonna":"Yonna"}
+        allowed = {"wave":"Wave","aps":"APS","yonna":"Yonna","waychit":"Waychit"}
         if not full_name or not phone_number or len(address) < 5 or len(address) > 300 or not payer_phone or provider not in allowed:
             flash("Please enter your full name, phone number, and address, select a payment method, and enter the payment phone number.", "error")
             return redirect(url_for("checkout"))
@@ -489,6 +506,9 @@ def create_app(test_config=None):
         # Check that the chosen provider is configured before creating customer,
         # order, and payment records. This prevents duplicate pending orders when
         # a shopper retries checkout while payment credentials are still missing.
+        if provider == "waychit" and not app.config.get("WAYCHIT_API_KEY"):
+            flash("Waychit payments are not connected yet. Please contact the store before retrying.", "error")
+            return redirect(url_for("checkout"))
         if provider == "wave" and not app.config.get("WAVE_API_KEY"):
             flash("Wave payments are not connected yet. Please contact the store before retrying.", "error")
             return redirect(url_for("checkout"))
@@ -530,9 +550,15 @@ def create_app(test_config=None):
             return redirect(url_for("payment_pending", order_id=order.id))
 
         try:
-            response = _wave_checkout(order,payer_phone) if provider=="wave" else _aps_checkout(order,payer_phone,provider)
-            launch_url = response.get("wave_launch_url") if provider=="wave" else (response.get("how") or response.get("url"))
-            payment.provider_reference = response.get("id") or response.get("transaction_id")
+            if provider == "waychit":
+                response = _waychit_checkout(order)
+                request_data = extract_payment_request(response)
+                launch_url = request_data.get("waychitLaunchUrl") or request_data.get("launchUrl") or request_data.get("url")
+                payment.provider_reference = request_data.get("id") or request_data.get("paymentRequestId")
+            else:
+                response = _wave_checkout(order,payer_phone) if provider=="wave" else _aps_checkout(order,payer_phone,provider)
+                launch_url = response.get("wave_launch_url") if provider=="wave" else (response.get("how") or response.get("url"))
+                payment.provider_reference = response.get("id") or response.get("transaction_id")
             db.session.commit()
         except Exception as exc:
             app.logger.exception("Payment initiation failed for %s: %s",order.order_number,exc)
@@ -608,6 +634,78 @@ def create_app(test_config=None):
             if order.payments: order.payments[-1].status="failed"
         db.session.commit(); return {"status":"ok"}
 
+
+
+    @app.get("/payment/waychit/return/<int:order_id>")
+    def waychit_payment_return(order_id):
+        # Redirects are only a customer navigation step. The signed webhook is
+        # the payment confirmation source; never mark an order paid on redirect.
+        order = models.Order.query.get_or_404(order_id)
+        return redirect(url_for("payment_pending", order_id=order.id))
+
+
+    @app.post("/payment/waychit/webhook")
+    @csrf.exempt
+    def waychit_payment_webhook():
+        secret = app.config.get("WAYCHIT_WEBHOOK_SECRET")
+        if not secret:
+            return {"error": "webhook verification is not configured"}, 503
+        raw_body = request.get_data()
+        signature = request.headers.get("Waychit-Signature", "")
+        if not verify_waychit_signature(signature, raw_body, secret):
+            return {"error": "invalid signature"}, 401
+
+        payload = request.get_json(silent=True) or {}
+        if payload.get("type") != "payment.request.completed":
+            return {"status": "ignored"}, 200
+
+        data = payload.get("data") or {}
+        client_reference = data.get("clientReference") or data.get("client_reference")
+        metadata = data.get("metadata") or {}
+        order_number = client_reference or metadata.get("orderNumber")
+        order_id = metadata.get("orderId")
+        order = models.Order.query.filter_by(order_number=order_number).first() if order_number else None
+        if order is None and str(order_id or "").isdigit():
+            order = db.session.get(models.Order, int(order_id))
+        if order is None:
+            return {"status": "unmatched"}, 200
+
+        payment = (models.Payment.query
+                   .filter_by(order_id=order.id, provider="Waychit")
+                   .order_by(models.Payment.created_at.desc())
+                   .first())
+        if payment is None or order.payment_status == "paid":
+            return {"status": "already_processed" if order.payment_status == "paid" else "unmatched"}, 200
+
+        request_id = data.get("id") or data.get("paymentRequestId")
+        if payment.provider_reference and request_id and payment.provider_reference != request_id:
+            return {"error": "payment reference mismatch"}, 409
+
+        # Only a signed, completed event with a matching reference and amount
+        # can settle an order. Unknown/incomplete payloads are acknowledged but
+        # never treated as successful payments.
+        status = str(data.get("status") or "").lower()
+        amount_value = data.get("amount")
+        if status not in {"completed", "succeeded", "paid"} or amount_value is None:
+            return {"status": "not_final"}, 200
+        try:
+            confirmed_amount = Decimal(str(amount_value)).quantize(Decimal("0.01"))
+        except Exception:
+            return {"error": "invalid amount"}, 400
+        expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"))
+        if confirmed_amount != expected_amount:
+            return {"error": "amount mismatch"}, 409
+        if data.get("currency") and str(data["currency"]).upper() != order.currency.upper():
+            return {"error": "currency mismatch"}, 409
+
+        payment.status = "paid"
+        if request_id:
+            payment.provider_reference = request_id
+        order.payment_status = "paid"
+        order.status = "confirmed"
+        _ensure_receipt(order)
+        db.session.commit()
+        return {"status": "processed"}, 200
 
     @app.get("/payment/pending/<int:order_id>")
     def payment_pending(order_id):
