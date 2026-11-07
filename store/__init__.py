@@ -639,7 +639,10 @@ def create_app(test_config=None):
         order = models.Order.query.get_or_404(order_id)
         payment = (
             models.Payment.query
-            .filter_by(order_id=order.id, provider__in=["APS", "Yonna"])
+            .filter(
+                models.Payment.order_id == order.id,
+                models.Payment.provider == "APS",
+            )
             .order_by(models.Payment.created_at.desc())
             .first()
         )
@@ -648,11 +651,9 @@ def create_app(test_config=None):
 
         # Bind the callback to the exact order and payment transaction.
         external_id = payload.get("merchant_external_id")
-        if external_id and external_id != order.order_number:
+        if external_id != order.order_number:
             return {"error": "order reference mismatch"}, 409
         transaction_id = payload.get("transaction_id")
-        if payment.provider_reference and transaction_id and payment.provider_reference != transaction_id:
-            return {"error": "transaction reference mismatch"}, 409
 
         status = str(payload.get("status") or "").lower()
         sep31_status = str(payload.get("sep31_status") or "").lower()
@@ -669,6 +670,11 @@ def create_app(test_config=None):
             expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"))
             if confirmed_amount != expected_amount:
                 return {"error": "payment amount mismatch"}, 409
+            callback_currency = str(payload.get("body_currency") or "").upper()
+            if callback_currency:
+                currency_code = callback_currency.rsplit(":", 1)[-1]
+                if currency_code != order.currency.upper():
+                    return {"error": "payment currency mismatch"}, 409
 
             payment.status = "paid"
             if transaction_id:
