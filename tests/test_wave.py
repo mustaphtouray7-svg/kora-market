@@ -193,14 +193,14 @@ def test_only_admin_can_manually_confirm_submitted_wave_payment(app, client):
         data={"wave_reference": "WAVE-TXN-12345"},
     )
     with app.app_context():
-        admin = AdminUser(username="wave-admin")
+        admin = AdminUser(username="wave-admin@example.com")
         admin.set_password("correct horse battery")
         db.session.add(admin)
         db.session.commit()
 
     login = client.post(
         "/admin/login",
-        data={"username": "wave-admin", "password": "correct horse battery"},
+        data={"username": "wave-admin@example.com", "password": "correct horse battery"},
     )
     assert login.status_code == 302
     response = client.post(
