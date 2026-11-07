@@ -1,4 +1,5 @@
 from decimal import Decimal
+import secrets
 from functools import wraps
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
@@ -10,7 +11,7 @@ from wtforms import BooleanField, DecimalField, IntegerField, PasswordField, Str
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional
 
 from store.extensions import db
-from store.models import AdminUser, StaffUser, Branch, Customer, Order, OrderItem, Product
+from store.models import AdminUser, StaffUser, Branch, Customer, Order, OrderItem, Product, Payment, Receipt
 
 auth = Blueprint("auth", __name__)
 
@@ -292,6 +293,40 @@ def order_detail(order_id):
     if getattr(current_user, "is_customer", False) and order.customer_id != current_user.id:
         abort(403)
     return render_template("auth/order_detail.html", order=order)
+
+@auth.post("/admin/orders/<int:order_id>/confirm-wave-payment")
+@login_required
+@admin_required
+def confirm_wave_payment(order_id):
+    order = Order.query.get_or_404(order_id)
+    payment = (
+        Payment.query
+        .filter_by(order_id=order.id, provider="Wave")
+        .order_by(Payment.created_at.desc())
+        .first()
+    )
+    if payment is None or payment.status != "submitted" or not payment.provider_reference:
+        flash("There is no submitted Wave transaction reference to verify.", "error")
+        return redirect(url_for("auth.order_detail", order_id=order.id))
+    if request.form.get("verified") != "yes":
+        flash("Confirm that you checked the payment in the Wave merchant wallet.", "error")
+        return redirect(url_for("auth.order_detail", order_id=order.id))
+    if order.payment_status == "paid":
+        flash("This order is already marked as paid.", "info")
+        return redirect(url_for("auth.order_detail", order_id=order.id))
+
+    payment.status = "paid"
+    order.payment_status = "paid"
+    order.status = "confirmed"
+    if order.receipt is None:
+        db.session.add(Receipt(
+            order=order,
+            receipt_number=f"REC-{order.order_number}",
+            verification_code=secrets.token_hex(16),
+        ))
+    db.session.commit()
+    flash("Wave payment verified. The order is now confirmed and its receipt has been issued.", "success")
+    return redirect(url_for("auth.order_detail", order_id=order.id))
 
 @auth.post("/admin/orders/<int:order_id>/collection-status")
 @login_required
