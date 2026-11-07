@@ -25,10 +25,10 @@
       <form method="post" action="{{ url_for('submit_wave_payment_reference', order_id=order.id) }}" class="stack-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="field">
-          <label for="wave_reference">Wave transaction reference</label>
+          <label for="wave_reference">Wave Transaction ID / Reference</label>
           <input id="wave_reference" name="wave_reference" type="text" maxlength="160" required autocomplete="off" value="{{ payment.provider_reference if payment.status == 'submitted' else '' }}">
         </div>
-        <button class="button button-full" type="submit">Submit payment reference</button>
+        <button class="button button-full" type="submit">Submit Transaction ID & View Receipt</button>
       </form>
       {% if payment.status == "submitted" %}<div class="flash flash-info">Reference submitted. Your payment is awaiting manual verification.</div><a class="button button-secondary button-full" href="{{ url_for('order_receipt', order_id=order.id) }}">View my order receipt</a>{% endif %}
     </div>
