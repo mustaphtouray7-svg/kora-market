@@ -49,9 +49,9 @@ def extract_payment_request(response):
         return {}
     value = response.get("paymentRequest") or response.get("data")
     if isinstance(value, dict):
-        # Preserve top-level launch URLs while taking IDs and nested fields
-        # from the paymentRequest envelope when the API returns both.
-        return {**response, **value}
+        # Flatten the documented envelope while retaining top-level launch URLs.
+        flattened = {key: item for key, item in response.items() if key not in {"paymentRequest", "data"}}
+        return {**flattened, **value}
     return response
 
 
