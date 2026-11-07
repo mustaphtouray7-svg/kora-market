@@ -620,19 +620,67 @@ def create_app(test_config=None):
 
 
     @app.post("/payment/aps/callback/<int:order_id>")
+    @csrf.exempt
     def aps_payment_callback(order_id):
-        order=models.Order.query.get_or_404(order_id); raw=request.get_data(); secret=app.config.get("APS_CALLBACK_SECRET"); signature=request.headers.get("X-Signature")
-        if secret and signature:
-            expected=hmac.new(secret.encode("utf-8"),raw,hashlib.sha256).hexdigest()
-            if not hmac.compare_digest(expected,signature): return {"error":"invalid signature"},401
-        payload=request.get_json(silent=True) or {}; status=payload.get("status")
-        if status=="done" or payload.get("sep31_status")=="completed":
-            order.payment_status="paid"; order.status="confirmed"
-            if order.payments: order.payments[-1].status="paid"; order.payments[-1].provider_reference=payload.get("transaction_id") or order.payments[-1].provider_reference
+        # APS signs the exact raw JSON body with HMAC-SHA256. Never accept an
+        # unsigned callback: otherwise anyone who knows an order ID could mark
+        # an unpaid order as paid.
+        secret = app.config.get("APS_CALLBACK_SECRET")
+        if not secret:
+            return {"error": "APS callback verification is not configured"}, 503
+
+        raw = request.get_data()
+        signature = (request.headers.get("X-Signature") or "").strip()
+        expected = hmac.new(secret.encode("utf-8"), raw, hashlib.sha256).hexdigest()
+        if not signature or not hmac.compare_digest(expected, signature):
+            return {"error": "invalid signature"}, 401
+
+        payload = request.get_json(silent=True) or {}
+        order = models.Order.query.get_or_404(order_id)
+        payment = (
+            models.Payment.query
+            .filter_by(order_id=order.id, provider__in=["APS", "Yonna"])
+            .order_by(models.Payment.created_at.desc())
+            .first()
+        )
+        if payment is None:
+            return {"error": "matching payment not found"}, 404
+
+        # Bind the callback to the exact order and payment transaction.
+        external_id = payload.get("merchant_external_id")
+        if external_id and external_id != order.order_number:
+            return {"error": "order reference mismatch"}, 409
+        transaction_id = payload.get("transaction_id")
+        if payment.provider_reference and transaction_id and payment.provider_reference != transaction_id:
+            return {"error": "transaction reference mismatch"}, 409
+
+        status = str(payload.get("status") or "").lower()
+        sep31_status = str(payload.get("sep31_status") or "").lower()
+        refunded = payload.get("refunded") is True
+
+        if status == "done" and sep31_status == "completed" and not refunded:
+            amount_value = payload.get("amount_in")
+            if amount_value is None:
+                return {"error": "payment amount missing"}, 400
+            try:
+                confirmed_amount = Decimal(str(amount_value)).quantize(Decimal("0.01"))
+            except Exception:
+                return {"error": "invalid payment amount"}, 400
+            expected_amount = Decimal(str(payment.amount)).quantize(Decimal("0.01"))
+            if confirmed_amount != expected_amount:
+                return {"error": "payment amount mismatch"}, 409
+
+            payment.status = "paid"
+            if transaction_id:
+                payment.provider_reference = transaction_id
+            order.payment_status = "paid"
+            order.status = "confirmed"
             _ensure_receipt(order)
-        elif status in {"canceled","expired","refunded"} or payload.get("sep31_status")=="error":
-            if order.payments: order.payments[-1].status="failed"
-        db.session.commit(); return {"status":"ok"}
+        elif status in {"canceled", "expired", "refunded"} or sep31_status == "error" or refunded:
+            payment.status = "failed"
+
+        db.session.commit()
+        return {"status": "ok"}
 
 
 
