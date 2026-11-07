@@ -3,6 +3,7 @@ name: Tests
 on:
   push:
     branches:
+      - main
       - feature/multi-vendor-marketplace
   pull_request:
     branches:
