@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Order receipt | GAM-MARKET{% endblock %}
+{% block content %}
+<section class="panel narrow">
+  <div class="panel-header stack">
+    <div>
+      <p class="eyebrow">GAM-MARKET · Order receipt</p>
+      <h1>{{ "Payment receipt" if paid else "Order receipt" }}</h1>
+      <p class="welcome-copy">Order {{ order.order_number }}</p>
+    </div>
+  </div>
+
+  {% if paid %}
+    <div class="flash flash-success">Payment verified. Your order is confirmed.</div>
+    {% if receipt %}<div class="checkout-line"><span>Receipt number</span><strong>{{ receipt.receipt_number }}</strong></div>{% endif %}
+  {% else %}
+    <div class="flash flash-info"><strong>Payment reference received — awaiting verification.</strong><br>Your order is not marked as paid yet. GAM-MARKET will confirm it after checking the transaction in the merchant account.</div>
+  {% endif %}
+
+  <div class="checkout-summary">
+    <div class="checkout-line"><span>Customer</span><strong>{{ order.customer.full_name }}</strong></div>
+    <div class="checkout-line"><span>Phone</span><strong>{{ order.customer.phone_number }}</strong></div>
+    <div class="checkout-line"><span>Delivery address</span><strong>{{ order.customer.address or "Not provided" }}</strong></div>
+    <div class="checkout-line"><span>Payment method</span><strong>{{ payment.provider if payment else "—" }}</strong></div>
+    {% if payment and payment.provider == "Wave" and payment.status == "submitted" %}
+      <div class="checkout-line"><span>Wave transaction ID</span><strong>{{ payment.provider_reference }}</strong></div>
+    {% elif payment and payment.provider_reference %}
+      <div class="checkout-line"><span>Payment reference</span><strong>{{ payment.provider_reference }}</strong></div>
+    {% endif %}
+    <div class="checkout-line"><span>Order date</span><strong>{{ order.created_at.strftime("%d %b %Y, %H:%M") }}</strong></div>
+    <hr>
+    {% for item in order.items %}
+      <div class="checkout-line"><span>{{ item.product_name }} × {{ item.quantity }}</span><strong>{{ "%.2f" | format(item.subtotal) }} GMD</strong></div>
+    {% endfor %}
+    <div class="checkout-total"><span>Total</span><strong>{{ "%.2f" | format(order.total) }} GMD</strong></div>
+  </div>
+
+  {% if not paid %}
+    <p class="muted">Keep your order number for future updates. This page is an acknowledgement that your payment reference was submitted; it is not proof that the payment has cleared.</p>
+  {% else %}
+    <p class="muted">Keep this receipt for your records. Use your order number when asking about delivery.</p>
+  {% endif %}
+  <button class="button button-secondary button-full" type="button" onclick="window.print()">Print / Save receipt</button>
+  <a class="button button-full" href="{{ url_for('catalog') }}">Continue shopping</a>
+</section>
+{% endblock %}
