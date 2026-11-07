@@ -47,8 +47,12 @@ def extract_payment_request(response):
     """Normalize the documented paymentRequest response envelope."""
     if not isinstance(response, dict):
         return {}
-    value = response.get("paymentRequest") or response.get("data") or response
-    return value if isinstance(value, dict) else {}
+    value = response.get("paymentRequest") or response.get("data")
+    if isinstance(value, dict):
+        # Preserve top-level launch URLs while taking IDs and nested fields
+        # from the paymentRequest envelope when the API returns both.
+        return {**response, **value}
+    return response
 
 
 def verify_waychit_signature(signature, raw_body, secret, *, now=None, tolerance_seconds=300):
