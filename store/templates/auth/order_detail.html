@@ -14,6 +14,20 @@
     <div class="info-tile"><span>Order status</span><strong>{{ order.status|replace('_',' ')|title }}</strong></div>
     <div class="info-tile"><span>Pickup status</span><strong>{{ order.collection_status|replace('_',' ')|title }}</strong><span>Branch: {{ order.branch.name if order.branch else 'Not selected' }}</span></div>
   </div>
+  {% if current_user.is_admin and order.payments and order.payments[-1].provider == "Wave" and order.payments[-1].status == "submitted" and order.payment_status != "paid" %}
+    <h2>Verify Wave payment</h2>
+    <div class="info-tile">
+      <span>Customer-submitted transaction reference</span>
+      <strong>{{ order.payments[-1].provider_reference }}</strong>
+      <span>Expected amount: {{ "%.2f"|format(order.total) }} GMD</span>
+    </div>
+    <p class="muted">Open the Wave Business wallet and independently confirm that this exact payment was received for the correct amount before approving it.</p>
+    <form method="post" action="{{ url_for('auth.confirm_wave_payment', order_id=order.id) }}" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="payment-option"><input type="checkbox" name="verified" value="yes" required><span>I checked the Wave merchant wallet and confirmed this payment was received in full.</span></label>
+      <button class="button" type="submit">Verify Wave payment and confirm order</button>
+    </form>
+  {% endif %}
   <h2>Branch collection</h2>
   <p class="muted">Staff should mark an order as collected only after the customer has received all items listed on the receipt.</p>
   <form method="post" action="{{ url_for('auth.update_collection_status', order_id=order.id) }}" class="search-form">
