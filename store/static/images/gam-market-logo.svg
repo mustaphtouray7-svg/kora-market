@@ -1,11 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 150" role="img" aria-labelledby="title desc">
-<title id="title">GAM-MARKET</title><desc id="desc">Green shopping cart symbol and GAM-MARKET wordmark</desc>
-<defs><linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#35a96b"/><stop offset="1" stop-color="#12613f"/></linearGradient></defs>
-<rect x="5" y="8" width="132" height="132" rx="30" fill="url(#green)"/>
-<path d="M27 39h17l12 61h59l16-43H51" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M62 71h57M66 86h48" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
-<circle cx="69" cy="116" r="7" fill="#fff"/><circle cx="111" cy="116" r="7" fill="#fff"/>
-<text x="158" y="91" font-family="Arial, Helvetica, sans-serif" font-size="59" font-weight="800" letter-spacing="-2" fill="#163d2d">GAM-<tspan fill="#238653">MARKET</tspan></text>
-<path d="M160 110h422" stroke="#dceee3" stroke-width="3" stroke-linecap="round"/>
-<text x="161" y="136" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" letter-spacing="2.2" fill="#607c6b">SHOP SMART • LIVE BETTER</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 190" role="img" aria-labelledby="title desc">
+<title id="title">GAM-MARKET</title>
+<desc id="desc">Green shopping bag with a growing leaf symbol and GAM-MARKET wordmark</desc>
+<defs>
+ <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8bdc75"/><stop offset="1" stop-color="#21834b"/></linearGradient>
+ <linearGradient id="bag" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#27a765"/><stop offset="1" stop-color="#075b3a"/></linearGradient>
+</defs>
+<rect x="12" y="12" width="166" height="166" rx="42" fill="url(#bag)"/>
+<path d="M53 77h84l-8 72H61z" fill="#fff" opacity=".98"/>
+<path d="M76 80V65c0-13 9-23 20-23s20 10 20 23v15" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+<path d="M101 121c-1-22 9-39 31-49 1 23-8 39-31 49Z" fill="url(#leaf)"/>
+<path d="M101 121c-14-12-17-26-10-42 15 8 20 21 10 42Z" fill="#72c96b"/>
+<path d="M101 121c7-12 16-21 28-29" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+<path d="M77 132h38" stroke="#16834b" stroke-width="5" stroke-linecap="round"/>
+<text x="205" y="104" font-family="Arial,Helvetica,sans-serif" font-size="65" font-weight="800" letter-spacing="-2.5" fill="#124a32">GAM-<tspan fill="#279653">MARKET</tspan></text>
+<path d="M208 124h474" stroke="#b7dfc4" stroke-width="4" stroke-linecap="round"/>
+<text x="210" y="158" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="700" letter-spacing="4" fill="#4d8061">SHOP SMART  •  LIVE BETTER</text>
 </svg>
