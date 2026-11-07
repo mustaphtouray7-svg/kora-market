@@ -1079,3 +1079,16 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 @media print {
  .receipt-detail-grid > div,.receipt-order-heading > div,.receipt-item,.receipt-status,.receipt-grand-total { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
 }
+
+/* Separate receipt export controls */
+.receipt-export-buttons { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:9px; }
+.receipt-export-buttons .button { min-height:42px; padding:0 16px; }
+.receipt-export-buttons .button-secondary { color:#17613e; background:#e8f4eb; border:1px solid #c8e2d0; }
+.receipt-export-buttons .button-outline { color:#17613e; background:#fff; border:1px solid #b9d5c2; }
+.receipt-export-buttons .button-outline:hover { color:#fff; background:#17613e; }
+@media(max-width:600px) {
+ .receipt-toolbar { align-items:flex-start; flex-direction:column; }
+ .receipt-export-buttons { width:100%; justify-content:stretch; }
+ .receipt-export-buttons .button { flex:1 1 130px; }
+}
+@media print { .receipt-export-buttons { display:none !important; } }
