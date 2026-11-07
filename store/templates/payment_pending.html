@@ -16,6 +16,23 @@
   </div>
   {% if paid %}
     <div class="flash flash-success">Payment confirmed. Your order is now confirmed.</div>
+  {% elif provider_name|lower == "wave" %}
+    <div class="yonna-payment-instructions">
+      <h2>Complete your Wave payment</h2>
+      <p>Open the GAM-MARKET Wave payment page and pay exactly <strong>{{ "%.2f" | format(order.total) }} GMD</strong>.</p>
+      <p><a class="button button-full" href="{{ config.WAVE_PAYMENT_LINK }}" target="_blank" rel="noopener noreferrer">Open Wave and pay</a></p>
+      <p>After paying, return here and enter the transaction reference shown on your Wave receipt. Submitting a reference does not automatically confirm payment.</p>
+      <form method="post" action="{{ url_for('submit_wave_payment_reference', order_id=order.id) }}" class="stack-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="wave_reference">Wave transaction reference</label>
+          <input id="wave_reference" name="wave_reference" type="text" maxlength="160" required autocomplete="off" value="{{ payment.provider_reference if payment.status == 'submitted' else '' }}">
+        </div>
+        <button class="button button-full" type="submit">Submit payment reference</button>
+      </form>
+      {% if payment.status == "submitted" %}<div class="flash flash-info">Reference submitted. Your payment is awaiting manual verification.</div>{% endif %}
+    </div>
+    <div class="flash flash-info">Your order remains unpaid until an administrator verifies the transaction in the GAM-MARKET Wave merchant account.</div>
   {% elif provider_name|lower == "yonna" %}
     <div class="yonna-payment-instructions">
       <h2>Complete your Yonna payment</h2>
