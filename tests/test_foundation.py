@@ -10,6 +10,7 @@ from store.models import (
     Product,
 )
 from store.extensions import db
+from store.marketplace_models import Shop, ShopProduct
 
 
 def test_homepage_and_health_endpoint(client):
@@ -141,7 +142,10 @@ def test_public_storefront_lists_only_active_products(app, client):
     with app.app_context():
         active = Product(name="Fresh rice", price=Decimal("50.00"), is_active=True)
         inactive = Product(name="Old stock", price=Decimal("40.00"), is_active=False)
+        shop = Shop.query.filter_by(slug="kaira-couture").one()
         db.session.add_all([active, inactive])
+        db.session.flush()
+        db.session.add(ShopProduct(shop=shop, product=active))
         db.session.commit()
         active_id = active.id
         inactive_id = inactive.id
