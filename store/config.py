@@ -15,6 +15,7 @@ class Config:
     WAYCHIT_WEBHOOK_SECRET = os.environ.get("WAYCHIT_WEBHOOK_SECRET")
     WAYCHIT_API_BASE = os.environ.get("WAYCHIT_API_BASE", "https://api.waychit.com")
     WAVE_API_KEY = os.environ.get("WAVE_API_KEY")
+    WAVE_WEBHOOK_SECRET = os.environ.get("WAVE_WEBHOOK_SECRET")
     WAVE_CURRENCY = os.environ.get("WAVE_CURRENCY", "GMD")
     APS_APP_TOKEN = os.environ.get("APS_APP_TOKEN")
     APS_APP_SECRET = os.environ.get("APS_APP_SECRET")
