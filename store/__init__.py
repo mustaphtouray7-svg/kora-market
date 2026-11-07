@@ -540,6 +540,11 @@ def create_app(test_config=None):
         order.total = total
         payment = models.Payment(order=order,provider=allowed[provider],payer_phone_number=payer_phone,status="pending",amount=order.total)
         db.session.add(payment); db.session.commit()
+        # Keep this order available to the customer who created it, including
+        # after returning from the external wallet payment page.
+        accessible_orders = session.get("accessible_order_ids", [])
+        if order.id not in accessible_orders:
+            session["accessible_order_ids"] = (accessible_orders + [order.id])[-20:]
         if provider == "yonna" or (provider == "wave" and not app.config.get("WAVE_API_KEY")):
             # Manual wallet-link payments remain unpaid until an administrator
             # verifies the transaction in the merchant wallet.
@@ -905,8 +910,28 @@ def create_app(test_config=None):
         payment.provider_reference = reference
         payment.status = "submitted"
         db.session.commit()
-        flash("Your Wave payment reference was submitted. The order will remain pending until the store verifies the payment.", "success")
-        return redirect(url_for("payment_pending", order_id=order.id))
+        flash("Your Wave transaction reference was received. Payment is awaiting verification.", "success")
+        return redirect(url_for("order_receipt", order_id=order.id))
+
+    @app.get("/orders/<int:order_id>/receipt")
+    def order_receipt(order_id):
+        order = models.Order.query.get_or_404(order_id)
+        accessible_orders = session.get("accessible_order_ids", [])
+        if order.id not in accessible_orders and not getattr(current_user, "is_admin", False):
+            raise NotFound()
+        payment = (
+            models.Payment.query
+            .filter_by(order_id=order.id)
+            .order_by(models.Payment.created_at.desc())
+            .first()
+        )
+        return render_template(
+            "order_receipt.html",
+            order=order,
+            payment=payment,
+            receipt=order.receipt,
+            paid=order.payment_status == "paid",
+        )
 
     @app.get("/payment/pending/<int:order_id>")
     def payment_pending(order_id):
