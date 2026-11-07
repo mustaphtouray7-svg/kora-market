@@ -133,3 +133,84 @@ def test_wave_webhook_requires_signing_secret(client):
         data=b'{"type":"checkout.session.completed","data":{}}',
     )
     assert response.status_code == 503
+
+
+def test_wave_payment_link_checkout_does_not_require_api_credentials(app, client):
+    from store.models import Product
+    from decimal import Decimal
+
+    with app.app_context():
+        product = Product(name="Wave link product", price=Decimal("125.00"), stock_quantity=2)
+        db.session.add(product)
+        db.session.commit()
+        product_id = product.id
+
+    with client.session_transaction() as sess:
+        sess["cart"] = {str(product_id): 1}
+
+    response = client.post(
+        "/checkout",
+        data={
+            "full_name": "Test Customer",
+            "phone_number": "1234567",
+            "address": "Test address",
+            "payer_phone_number": "1234567",
+            "provider": "wave",
+        },
+    )
+    assert response.status_code == 302
+    assert "/payment/pending/" in response.headers["Location"]
+    with app.app_context():
+        order = Order.query.one()
+        assert order.payment_status == "pending"
+        assert order.payments[0].status == "pending"
+        assert order.payments[0].provider == "Wave"
+
+
+def test_wave_reference_submission_never_marks_order_paid(app, client):
+    order_id = _create_pending_wave_order(app)
+    response = client.post(
+        f"/payment/wave/reference/{order_id}",
+        data={"wave_reference": "WAVE-TXN-12345"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    with app.app_context():
+        order = db.session.get(Order, order_id)
+        assert order.payment_status == "pending"
+        assert order.status == "pending"
+        assert order.payments[0].status == "submitted"
+        assert order.payments[0].provider_reference == "WAVE-TXN-12345"
+        assert order.receipt is None
+
+
+def test_only_admin_can_manually_confirm_submitted_wave_payment(app, client):
+    from store.models import AdminUser
+
+    order_id = _create_pending_wave_order(app)
+    client.post(
+        f"/payment/wave/reference/{order_id}",
+        data={"wave_reference": "WAVE-TXN-12345"},
+    )
+    with app.app_context():
+        admin = AdminUser(username="wave-admin")
+        admin.set_password("correct horse battery")
+        db.session.add(admin)
+        db.session.commit()
+
+    login = client.post(
+        "/admin/login",
+        data={"username": "wave-admin", "password": "correct horse battery"},
+    )
+    assert login.status_code == 302
+    response = client.post(
+        f"/admin/orders/{order_id}/confirm-wave-payment",
+        data={"verified": "yes"},
+    )
+    assert response.status_code == 302
+    with app.app_context():
+        order = db.session.get(Order, order_id)
+        assert order.payment_status == "paid"
+        assert order.status == "confirmed"
+        assert order.payments[0].status == "paid"
+        assert order.receipt is not None
