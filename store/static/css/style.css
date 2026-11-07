@@ -995,3 +995,59 @@ button:disabled { opacity:.45; cursor:not-allowed; }
 .category-filter a { display:inline-flex; align-items:center; min-height:42px; padding:9px 16px; border:1px solid #d4e1d8; border-radius:999px; color:var(--green); background:#fff; font-weight:750; text-decoration:none; }
 .category-filter a:hover, .category-filter a.active { border-color:var(--green); color:#fff; background:var(--green); }
 .product-category { margin:0; color:#628173; font-size:.74rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+
+/* GAM-MARKET professional customer receipt */
+.page:has(.receipt-page) { display:block; width:min(100% - 28px, 820px); padding:30px 0 54px; }
+.receipt-page { width:100%; }
+.receipt-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 auto 16px; color:#60718a; font-size:.9rem; font-weight:700; }
+.receipt-paper { max-width:760px; margin:0 auto; padding:clamp(22px,5vw,48px); border:1px solid #e2e8f0; border-radius:18px; background:#fff; box-shadow:0 22px 60px rgb(20 45 80 / 9%); color:#192b43; }
+.receipt-brand { display:grid; justify-items:center; gap:12px; padding-bottom:24px; }
+.receipt-brand img { display:block; width:min(100%,390px); height:auto; }
+.receipt-brand-caption { color:#74849a; font-size:.68rem; font-weight:800; letter-spacing:.2em; }
+.receipt-status { display:flex; align-items:center; gap:14px; padding:16px 18px; border:1px solid #d9e6f3; border-radius:12px; background:#f4f8fd; }
+.receipt-status.is-paid { border-color:#cce8d5; background:#f1faf4; }
+.receipt-status-icon { display:grid; width:38px; height:38px; flex:0 0 38px; place-items:center; border-radius:50%; color:#fff; background:#356fae; font-size:1.2rem; font-weight:800; }
+.receipt-status.is-paid .receipt-status-icon { background:#24824b; }
+.receipt-status strong { display:block; color:#173c68; font-size:.98rem; }
+.receipt-status.is-paid strong { color:#21633b; }
+.receipt-status p { margin:4px 0 0; color:#66758a; font-size:.86rem; line-height:1.5; }
+.receipt-order-heading { display:flex; justify-content:space-between; align-items:end; gap:20px; padding:26px 0 18px; }
+.receipt-order-heading > div { display:grid; gap:6px; }
+.receipt-label { display:block; color:#8491a3; font-size:.65rem; font-weight:800; letter-spacing:.12em; }
+.receipt-order-number { color:#173c68; font-size:1.35rem; letter-spacing:.02em; }
+.receipt-date { text-align:right; }
+.receipt-date strong { color:#243a56; font-size:.94rem; }
+.receipt-date small { color:#74849a; }
+.receipt-number-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; color:#66758a; font-size:.86rem; }
+.receipt-number-row strong { color:#243a56; }
+.receipt-divider { height:1px; margin:8px 0 22px; background:#e7edf4; }
+.receipt-section { margin:0 0 22px; }
+.receipt-section h2 { margin:0 0 16px; color:#173c68; font-size:1rem; }
+.receipt-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 22px; }
+.receipt-detail-grid > div { display:grid; gap:5px; min-width:0; }
+.receipt-detail-grid strong { color:#273a53; font-size:.88rem; line-height:1.5; overflow-wrap:anywhere; }
+.receipt-address { grid-column:1/-1; }
+.receipt-reference { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+.receipt-items { display:grid; }
+.receipt-item { display:flex; justify-content:space-between; gap:16px; padding:13px 0; border-bottom:1px solid #edf1f5; }
+.receipt-item > div { display:grid; gap:4px; }
+.receipt-item strong { color:#273a53; font-size:.9rem; }
+.receipt-item small { color:#8290a2; font-size:.8rem; }
+.receipt-item > strong { white-space:nowrap; }
+.receipt-grand-total { display:flex; justify-content:space-between; align-items:center; gap:14px; margin-top:18px; padding:18px; border-radius:12px; color:#fff; background:#173c68; }
+.receipt-grand-total span { font-size:.72rem; font-weight:800; letter-spacing:.12em; }
+.receipt-grand-total strong { font-size:1.35rem; white-space:nowrap; }
+.receipt-footer { display:grid; justify-items:center; gap:7px; margin-top:30px; padding-top:22px; border-top:1px dashed #d7e0eb; text-align:center; }
+.receipt-footer strong { color:#173c68; font-size:.98rem; }
+.receipt-footer p,.receipt-footer small { margin:0; color:#8290a2; font-size:.82rem; }
+.receipt-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin:18px auto 0; }
+@media(max-width:520px) { .receipt-paper { padding:22px 17px; border-radius:14px; } .receipt-order-number { font-size:1.12rem; } .receipt-detail-grid { grid-template-columns:1fr; } .receipt-address { grid-column:auto; } .receipt-grand-total { padding:15px 13px; } .receipt-grand-total strong { font-size:1.15rem; } .receipt-actions > * { width:100%; } }
+@media print {
+  @page { size:A4; margin:12mm; }
+  body { display:block; min-width:0; background:#fff !important; color:#172b45; }
+  .site-header,.site-footer,.page-navigation,.flash-list,.no-print { display:none !important; }
+  .page:has(.receipt-page) { display:block; width:100%; max-width:none; margin:0; padding:0; }
+  .receipt-paper { max-width:none; margin:0; padding:8mm; border:0; border-radius:0; box-shadow:none; }
+  .receipt-status,.receipt-grand-total { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .receipt-item,.receipt-detail-grid > div,.receipt-status { break-inside:avoid; }
+}
