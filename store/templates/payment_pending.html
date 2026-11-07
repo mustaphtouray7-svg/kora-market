@@ -30,7 +30,7 @@
         </div>
         <button class="button button-full" type="submit">Submit payment reference</button>
       </form>
-      {% if payment.status == "submitted" %}<div class="flash flash-info">Reference submitted. Your payment is awaiting manual verification.</div>{% endif %}
+      {% if payment.status == "submitted" %}<div class="flash flash-info">Reference submitted. Your payment is awaiting manual verification.</div><a class="button button-secondary button-full" href="{{ url_for('order_receipt', order_id=order.id) }}">View my order receipt</a>{% endif %}
     </div>
     <div class="flash flash-info">Your order remains unpaid until an administrator verifies the transaction in the GAM-MARKET Wave merchant account.</div>
   {% elif provider_name|lower == "yonna" %}
