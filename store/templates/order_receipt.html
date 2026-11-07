@@ -4,7 +4,11 @@
 <section class="receipt-page" aria-label="Order receipt">
   <div class="receipt-toolbar no-print">
     <span>Order confirmation</span>
-    <button class="button" type="button" onclick="window.print()">Print / Save PDF</button>
+    <div class="receipt-export-buttons">
+      <button class="button" type="button" onclick="downloadReceiptPDF()">Download PDF</button>
+      <button class="button button-secondary" type="button" onclick="downloadReceiptImage()">Download Image</button>
+      <button class="button button-outline" type="button" onclick="window.print()">Print</button>
+    </div>
   </div>
 
   <article class="receipt-paper">
@@ -67,7 +71,30 @@
 
   <div class="receipt-actions no-print">
     <a class="button" href="{{ url_for('catalog') }}">Continue shopping</a>
-    <button class="button button-secondary" type="button" onclick="window.print()">Print / Save receipt</button>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    function downloadReceiptPDF() {
+      // Use the browser's PDF destination from its print dialog.
+      window.print();
+    }
+    async function downloadReceiptImage() {
+      const paper = document.querySelector(".receipt-paper");
+      if (!paper || typeof html2canvas !== "function") {
+        alert("Image export could not load. Please try again.");
+        return;
+      }
+      const canvas = await html2canvas(paper, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false
+      });
+      const link = document.createElement("a");
+      link.download = "GAM-MARKET-{{ order.order_number }}-receipt.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+  </script>
 </section>
 {% endblock %}
