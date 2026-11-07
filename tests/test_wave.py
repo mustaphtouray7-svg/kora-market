@@ -169,12 +169,18 @@ def test_wave_payment_link_checkout_does_not_require_api_credentials(app, client
 
 def test_wave_reference_submission_never_marks_order_paid(app, client):
     order_id = _create_pending_wave_order(app)
+    with client.session_transaction() as sess:
+        sess["accessible_order_ids"] = [order_id]
     response = client.post(
         f"/payment/wave/reference/{order_id}",
         data={"wave_reference": "WAVE-TXN-12345"},
         follow_redirects=True,
     )
     assert response.status_code == 200
+    assert response.request.path == f"/orders/{order_id}/receipt"
+    assert b"Payment reference received" in response.data
+    assert b"WAVE-TXN-12345" in response.data
+    assert b"Awaiting verification" in response.data
     with app.app_context():
         order = db.session.get(Order, order_id)
         assert order.payment_status == "pending"
