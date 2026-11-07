@@ -132,7 +132,7 @@ def create_app(test_config=None):
     # Create the staff table and safely add the pickup-status column to existing orders.
     # Inspection keeps this migration compatible with both PostgreSQL and SQLite.
     with app.app_context():
-        db.metadata.create_all(bind=db.engine, tables=[models.StaffUser.__table__, Seller.__table__, Shop.__table__, ShopProduct.__table__])
+        db.metadata.create_all(bind=db.engine)
         inspector = inspect(db.engine)
         if inspector.has_table("shops"):
             shop_columns = {column["name"] for column in inspector.get_columns("shops")}
@@ -509,9 +509,6 @@ def create_app(test_config=None):
         if provider == "waychit" and not app.config.get("WAYCHIT_API_KEY"):
             flash("Waychit payments are not connected yet. Please contact the store before retrying.", "error")
             return redirect(url_for("checkout"))
-        if provider == "wave" and not app.config.get("WAVE_API_KEY"):
-            flash("Wave payments are not connected yet. Please contact the store before retrying.", "error")
-            return redirect(url_for("checkout"))
         if provider == "aps" and not all(
             app.config.get(key) for key in ("APS_APP_TOKEN", "APS_APP_SECRET", "APS_MERCHANT_GUID")
         ):
@@ -543,9 +540,9 @@ def create_app(test_config=None):
         order.total = total
         payment = models.Payment(order=order,provider=allowed[provider],payer_phone_number=payer_phone,status="pending",amount=order.total)
         db.session.add(payment); db.session.commit()
-        if provider == "yonna":
-            # Yonna QR checkout is a manual-transfer flow. Keep the order unpaid
-            # until a staff member verifies the money has arrived in the wallet.
+        if provider == "yonna" or (provider == "wave" and not app.config.get("WAVE_API_KEY")):
+            # Manual wallet-link payments remain unpaid until an administrator
+            # verifies the transaction in the merchant wallet.
             session["cart"] = {}
             return redirect(url_for("payment_pending", order_id=order.id))
 
@@ -886,6 +883,30 @@ def create_app(test_config=None):
         _ensure_receipt(order)
         db.session.commit()
         return {"status": "processed"}, 200
+
+    @app.post("/payment/wave/reference/<int:order_id>")
+    def submit_wave_payment_reference(order_id):
+        order = models.Order.query.get_or_404(order_id)
+        payment = (
+            models.Payment.query
+            .filter_by(order_id=order.id, provider="Wave")
+            .order_by(models.Payment.created_at.desc())
+            .first()
+        )
+        if payment is None:
+            return {"error": "Wave payment not found"}, 404
+        if order.payment_status == "paid":
+            flash("This order has already been paid.", "info")
+            return redirect(url_for("payment_pending", order_id=order.id))
+        reference = (request.form.get("wave_reference") or "").strip()
+        if not reference or len(reference) > 160:
+            flash("Enter the Wave transaction reference from your payment receipt.", "error")
+            return redirect(url_for("payment_pending", order_id=order.id))
+        payment.provider_reference = reference
+        payment.status = "submitted"
+        db.session.commit()
+        flash("Your Wave payment reference was submitted. The order will remain pending until the store verifies the payment.", "success")
+        return redirect(url_for("payment_pending", order_id=order.id))
 
     @app.get("/payment/pending/<int:order_id>")
     def payment_pending(order_id):
