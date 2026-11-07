@@ -907,9 +907,29 @@ def create_app(test_config=None):
         if not reference or len(reference) > 160:
             flash("Enter the Wave transaction reference from your payment receipt.", "error")
             return redirect(url_for("payment_pending", order_id=order.id))
+        # A Wave transaction reference must belong to only one payment.
+        # Reject reuse cleanly instead of allowing the database uniqueness
+        # constraint to turn a customer typo/retry into an HTTP 500.
+        existing_payment = models.Payment.query.filter(
+            models.Payment.provider_reference == reference,
+            models.Payment.id != payment.id,
+        ).first()
+        if existing_payment is not None:
+            flash(
+                "This Wave transaction reference has already been submitted. "
+                "Check the reference on your Wave receipt and enter the correct one.",
+                "error",
+            )
+            return redirect(url_for("payment_pending", order_id=order.id))
         payment.provider_reference = reference
         payment.status = "submitted"
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            app.logger.exception("Could not save Wave reference for order %s", order.order_number)
+            flash("We could not save that reference. Please check it and try again.", "error")
+            return redirect(url_for("payment_pending", order_id=order.id))
         flash("Your Wave transaction reference was received. Payment is awaiting verification.", "success")
         return redirect(url_for("order_receipt", order_id=order.id))
 
