@@ -1,3 +1,4 @@
+import io
 from store.extensions import db
 from store.marketplace_models import Seller, Shop
 from store.models import AdminUser, Product
@@ -16,6 +17,7 @@ def test_seller_can_apply_but_pending_shop_is_not_public(client, app):
             "description": "Clothing and accessories for everyday use.",
             "password": "secure-password-123",
             "confirm_password": "secure-password-123",
+            "image_file": (io.BytesIO(b"test-brand-image"), "brand.png"),
         },
         follow_redirects=True,
     )
