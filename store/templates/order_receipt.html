@@ -72,11 +72,22 @@
   <div class="receipt-actions no-print">
     <a class="button" href="{{ url_for('catalog') }}">Continue shopping</a>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <script>
-    function downloadReceiptPDF() {
-      // Use the browser's PDF destination from its print dialog.
-      window.print();
+    async function downloadReceiptPDF() {
+      const paper = document.querySelector(".receipt-paper");
+      if (!paper || typeof html2pdf !== "function") {
+        alert("PDF export could not load. Please try again.");
+        return;
+      }
+      await html2pdf().set({
+        margin: [8, 8, 8, 8],
+        filename: "GAM-MARKET-{{ order.order_number }}-receipt.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] }
+      }).from(paper).save();
     }
     async function downloadReceiptImage() {
       const paper = document.querySelector(".receipt-paper");
