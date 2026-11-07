@@ -220,3 +220,49 @@ def test_only_admin_can_manually_confirm_submitted_wave_payment(app, client):
         assert order.status == "confirmed"
         assert order.payments[0].status == "paid"
         assert order.receipt is not None
+
+
+def test_wave_reference_rejects_reference_already_used_by_another_payment(app, client):
+    first_order_id = _create_pending_wave_order(app)
+    with app.app_context():
+        customer = Customer(
+            full_name="Second Test Customer",
+            phone_number="7654321",
+            address="Second test address",
+        )
+        second_order = Order(
+            order_number="KORA-TEST-WAVE-002",
+            customer=customer,
+            status="pending",
+            payment_status="pending",
+            currency="GMD",
+            total=Decimal("125.00"),
+        )
+        second_payment = Payment(
+            order=second_order,
+            provider="Wave",
+            provider_reference="cos-test-wave-002",
+            payer_phone_number="7654321",
+            status="pending",
+            amount=Decimal("125.00"),
+        )
+        db.session.add(second_order)
+        db.session.add(second_payment)
+        db.session.commit()
+        second_order_id = second_order.id
+
+    with client.session_transaction() as sess:
+        sess["accessible_order_ids"] = [first_order_id, second_order_id]
+
+    response = client.post(
+        f"/payment/wave/reference/{second_order_id}",
+        data={"wave_reference": "cos-test-wave-001"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert b"already been submitted" in response.data
+    assert response.request.path == f"/payment/pending/{second_order_id}"
+    with app.app_context():
+        payment = Payment.query.filter_by(order_id=second_order_id).one()
+        assert payment.provider_reference == "cos-test-wave-002"
+        assert payment.status == "pending"
